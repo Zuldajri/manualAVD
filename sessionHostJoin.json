@@ -1,0 +1,542 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmGalleryImageOffer": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image Offer."
+            }
+        },
+        "vmGalleryImagePublisher": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image Publisher."
+            }
+        },
+        "vmGalleryImageSKU": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image SKU."
+            }
+        },
+        "rdshPrefix": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "This prefix will be used in combination with the VM number to create the VM name. This value includes the dash, so if using “rdsh” as the prefix, VMs would be named “rdsh-0”, “rdsh-1”, etc. You should use a unique prefix to reduce name collisions in Active Directory."
+            }
+        },
+        "deployImageVM": {
+            "defaultValue": "false",
+            "type": "string",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "metadata": {
+                "description": "Deploy a partialy configured base-VM to create a golden image for your WVD deployment."
+            }
+        },
+        "rdshNumberOfInstances": {
+            "type": "Int",
+            "metadata": {
+                "description": "Number of session hosts that will be created and added to the hostpool."
+            }
+        },
+        "rdshVMDiskType": {
+            "type": "String",
+            "metadata": {
+                "description": "The VM disk type for the VM: HDD or SSD."
+            }
+        },
+        "rdshVmSize": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "The size of the session host VMs."
+            }
+        },
+        "enableAcceleratedNetworking": {
+            "type": "String",
+            "metadata": {
+                "description": "Enables Accelerated Networking feature, notice that VM size must support it, this is supported in most of general purpose and compute-optimized instances with 2 or more vCPUs, on instances that supports hyperthreading it is required minimum of 4 vCPUs."
+            }
+        },
+        "domainAdmin": {
+            "type": "String",
+            "metadata": {
+                "description": "The username for the admin."
+            }
+        },
+        "domainAdminPassword": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "The password that corresponds to the existing domain username."
+            }
+        },
+        "subnetId": {
+            "type": "String",
+            "metadata": {
+                "description": "The unique id of the subnet for the nics."
+            }
+        },
+        "location": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "Location for all resources to be created in."
+            }
+        },
+        "hostpoolToken": {
+            "type": "String",
+            "metadata": {
+                "description": "The token for adding VMs to the hostpool"
+            }
+        },
+        "hostpoolName": {
+            "type": "String",
+            "metadata": {
+                "description": "The name of the hostpool"
+            }
+        },
+        "domainToJoin": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "Domain to join"
+            }
+        },
+        "storageAccountNameShare": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "name of the storage account used"
+            }
+        },
+        "storageAccountNameDiag": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "name of the storage account used"
+            }
+        },
+        "installTeams": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Default Admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Default Admin password"
+            }
+        },
+        "osDiskSize": {
+            "type": "int",
+            "metadata": {
+                "description": "Default Admin username"
+            }
+        },
+        "domainType": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "profileType": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "fileShareName": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "aadClientId": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "aadClientSecret": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "rdshGalleryImageSKU": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "useAVDOptimizer": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "useScalingPlan": {
+            "defaultValue": "",
+            "type": "string"
+        }
+    },
+    "variables": {
+        "networkSecurityGroupRules": [],
+        "artifactsLocation": "https://github.com/Zuldajri/AVD/blob/main/Configuration.zip?raw=true",
+        "domainAdmin": "[if(contains(parameters('domainAdmin'), '@'), parameters('domainAdmin'), concat(parameters('domainToJoin'), '\\', parameters('domainAdmin')))]",
+        "isNsv4": "[if(contains(parameters('rdshVmSize'), '_v4'), 'true', 'false')]",
+        "licenseType": "[if(contains(parameters('rdshGalleryImageSKU'), '10'), 'Windows_Client', 'Windows_Server')]",
+        "ResourceGroupName": "[resourceGroup().name]",
+        "subscriptionID": "[subscription().subscriptionId]",
+        "tenantId": "[subscription().tenantId]",
+        "nsgName": "[concat(parameters('rdshPrefix'), '-nsg')]",
+        "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]",
+        "ouPath": "",
+        "imageVmName": "imageVM",
+        "publicIpAddressName": "imageVM-PIP",
+        "publicIpAddress": { "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]" },
+        "location": "[resourceGroup().location]",
+        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('installTeams'))]"
+    },
+    "resources": [
+        {
+			"apiVersion": "2019-09-01",
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"name": "[variables('nsgName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": "[variables('networkSecurityGroupRules')]"
+			}
+		},
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('rdshPrefix'), 'nic', copyindex(1))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[parameters('subnetId')]"
+                            },
+                            "publicIpAddress": "[json('null')]"
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
+                "networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+            },
+            "copy": {
+                "name": "rdsh-nic-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2018-10-01",
+            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "rdsh-nic-loop"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('rdshVmSize')]"
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets/', concat(parameters('rdshPrefix'), 'availabilitySet'))]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(parameters('rdshPrefix'), 'host', copyindex(1))]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('vmGalleryImagePublisher')]",
+                        "offer": "[parameters('vmGalleryImageOffer')]",
+                        "sku": "[parameters('vmGalleryImageSKU')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(parameters('rdshPrefix'), 'osDisk', copyindex(1))]",
+                        "caching": "ReadWrite",
+                        "diskSizeGB": "[parameters('osDiskSize')]",
+                        "managedDisk": {
+                            "storageAccounttype": "[parameters('rdshVMDiskType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('rdshPrefix'), 'nic', copyindex(1)))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameDiag')), '2021-06-01').primaryEndpoints['blob']]"
+					}
+				},
+                "licenseType": "[variables('licenseType')]"
+            },
+            "copy": {
+                "name": "rdsh-vm-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2018-10-01",
+            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'joindomain')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "rdsh-vm-loop"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "JsonADDomainExtension",
+                "typeHandlerVersion": "1.3",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "name": "[parameters('domainToJoin')]",
+                    "ouPath": "[variables('ouPath')]",
+                    "user": "[variables('domainAdmin')]",
+                    "restart": "true",
+                    "options": "3"
+                },
+                "protectedSettings": {
+                    "password": "[parameters('domainAdminPassword')]"
+                }
+            },
+            "copy": {
+                "name": "rdsh-domain-join-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2018-10-01",
+            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'dscextension')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "rdsh-domain-join-loop"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.73",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "modulesUrl": "[variables('artifactsLocation')]",
+                    "configurationFunction": "Configuration.ps1\\AddSessionHost",
+                    "properties": {
+                        "hostPoolName": "[parameters('hostpoolName')]",
+                        "registrationInfoToken": "[parameters('hostpoolToken')]",
+                        "aadJoin": false
+                    }
+                }
+            },
+            "copy": {
+                "name": "rdsh-dsc-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'installcustomscript')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "rdsh-dsc-loop"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "https://raw.githubusercontent.com/Zuldajri/AVD/main/customscript.ps1"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[variables('commandToExecute')]"
+
+                }
+            },
+            "copy": {
+                "name": "fslogix-profiles-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+
+        {
+            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'nvidia-grid')]",
+            "condition": "[and(equals(parameters('profileType'),'Graphics'),equals(variables('isNsv4'),'false'))]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "fslogix-profiles-loop"
+            ],
+            "properties": {
+                "publisher": "Microsoft.HpcCompute",
+                "type": "NvidiaGpuDriverWindows",
+                "typeHandlerVersion": "1.2",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                }
+            },
+            "copy": {
+                "name": "additional-rdsh-nvidia-grid-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'AMDDriver')]",
+            "condition": "[and(equals(parameters('profileType'),'Graphics'),equals(variables('isNsv4'),'true'))]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "fslogix-profiles-loop"
+            ],
+            "properties": {
+                "publisher": "Microsoft.HpcCompute",
+                "type": "AmdGpuDriverWindows",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                }
+            },
+            "copy": {
+                "name": "additional-rdsh-AMD-GPU-loop",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            }
+        },
+        {
+            "name": "[variables('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "condition": "[parameters('deployImageVM')]",
+            "apiVersion": "2019-02-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIpAllocationMethod": "Dynamic"
+            },
+            "sku": {
+                "name": "Standard"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-11-01",
+            "condition": "[parameters('deployImageVM')]",
+            "name": "[concat(variables('imageVmName'), '-nic')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "NSG-linkedTemplate", 
+                "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[parameters('subnetId')]"
+                            },
+                            "publicIpAddress": "[variables('publicIpAddress')]"
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
+                "networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+            }
+        },
+        {
+            "name": "[variables('imageVmName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "condition": "[parameters('deployImageVM')]",
+            "apiVersion": "2021-03-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', 'imageVM-nic')]",
+                "fslogix-profiles-loop"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('rdshVmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('vmGalleryImagePublisher')]",
+                        "offer": "[parameters('vmGalleryImageOffer')]",
+                        "sku": "[parameters('vmGalleryImageSKU')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('imageVmName'), '-osDisk', copyindex(1))]",
+                        "caching": "ReadWrite",
+                        "diskSizeGB": "[parameters('osDiskSize')]",
+                        "managedDisk": {
+                            "storageAccounttype": "[parameters('rdshVMDiskType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'imageVM-nic')]"
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[variables('imageVmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameDiag')), '2021-06-01').primaryEndpoints['blob']]"
+					}
+				},
+                "licenseType": "[variables('licenseType')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2018-06-01",
+            "name": "[concat(variables('imageVmName'),'/installcustomscript')]",
+            "condition": "[parameters('deployImageVM')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('imageVmName'))]",
+                "fslogix-profiles-loop"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                    "settings": {
+                    "fileUris": [
+                       "https://raw.githubusercontent.com/Zuldajri/AVD/main/customscript.ps1"
+                   ],
+                   "commandToExecute": "[variables('commandToExecute')]"
+               }
+           }
+       }
+    ],
+    "outputs": {}
+}
