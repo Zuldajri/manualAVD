@@ -425,7 +425,7 @@
         {
             "name": "[variables('publicIpAddressName')]",
             "type": "Microsoft.Network/publicIpAddresses",
-            "condition": "[parameters('deployImageVM')]",
+            "condition": "[equals(parameters('deployImageVM'),'true')]",
             "apiVersion": "2019-02-01",
             "location": "[variables('location')]",
             "properties": {
@@ -438,7 +438,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2018-11-01",
-            "condition": "[parameters('deployImageVM')]",
+            "condition": "[equals(parameters('deployImageVM'),'true')]",
             "name": "[concat(variables('imageVmName'), '-nic')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -465,7 +465,7 @@
         {
             "name": "[variables('imageVmName')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "condition": "[parameters('deployImageVM')]",
+            "condition": "[equals(parameters('deployImageVM'),'true')]",
             "apiVersion": "2021-03-01",
             "location": "[variables('location')]",
             "dependsOn": [
@@ -518,7 +518,7 @@
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2018-06-01",
             "name": "[concat(variables('imageVmName'),'/installcustomscript')]",
-            "condition": "[parameters('deployImageVM')]",
+            "condition": "[equals(parameters('deployImageVM'),'true')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', variables('imageVmName'))]",
