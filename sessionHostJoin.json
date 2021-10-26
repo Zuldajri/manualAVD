@@ -194,8 +194,7 @@
         "imageVmName": "imageVM",
         "publicIpAddressName": "imageVM-PIP",
         "publicIpAddress": { "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]" },
-        "location": "[resourceGroup().location]",
-        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('installTeams'))]"
+        "location": "[resourceGroup().location]"
     },
     "resources": [
         {
@@ -369,7 +368,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[variables('commandToExecute')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('installTeams'))]"
 
                 }
             },
@@ -533,7 +532,7 @@
                     "fileUris": [
                        "https://raw.githubusercontent.com/Zuldajri/AVD/main/customscript.ps1"
                    ],
-                   "commandToExecute": "[variables('commandToExecute')]"
+                   "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('installTeams'))]"
                }
            }
        }
