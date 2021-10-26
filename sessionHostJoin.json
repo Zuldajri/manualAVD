@@ -442,7 +442,7 @@
             "name": "[concat(variables('imageVmName'), '-nic')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "NSG-linkedTemplate", 
+                "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]", 
                 "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
             ],
             "properties": {
