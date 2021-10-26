@@ -188,7 +188,7 @@
         "ResourceGroupName": "[resourceGroup().name]",
         "subscriptionID": "[subscription().subscriptionId]",
         "tenantId": "[subscription().tenantId]",
-        "nsgName": "[concat(parameters('rdshPrefix'), '-nsg')]",
+        "nsgName": "[concat(parameters('rdshPrefix'), 'nsg')]",
         "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]",
         "ouPath": "",
         "imageVmName": "imageVM",
@@ -222,13 +222,14 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[parameters('subnetId')]"
-                            },
-                            "publicIpAddress": "[json('null')]"
+                            }
                         }
                     }
                 ],
                 "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
-                "networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                }
             },
             "copy": {
                 "name": "rdsh-nic-loop",
@@ -459,7 +460,9 @@
                     }
                 ],
                 "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
-                "networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                }
             }
         },
         {
