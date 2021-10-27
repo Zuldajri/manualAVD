@@ -11,6 +11,8 @@ Param(
   [string] $domainName,
   [string] $domainType,
   [string] $profileType,
+  [string] $ObjectIDGroupUser,
+  [string] $ObjectIDGroupAdmin,
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
   [string] $installTeams
@@ -49,8 +51,6 @@ $locationAzFiledownload = "C:\AzFilesHybrid.zip"
 $folder = "C:\AzFileHybrid"
 $UserGroupName = "AVD-Users"
 $AdminGroupName = "AVD-Admin"
-$ObjectIDGroupUser = (Get-AzADGroup -DisplayName $UserGroupName).id
-$ObjectIDGroupAdmin = (Get-AzADGroup -DisplayName $AdminGroupName).id
 $rolenameAdmin = "Storage File Data SMB Share Elevated Contributor"
 $rolenameUser = "Storage File Data SMB Share Contributor"
 $AccountType = "ComputerAccount"
@@ -359,40 +359,42 @@ New-ItemProperty `
 #Step 14    Teams installation
 
 if ($installTeams -eq 'true'){
+    if ($rdshGalleryImageSKU -contains 'Datacenter'){
 
-    #regedit teams for wvd
-    New-Item -Path HKLM:\SOFTWARE\Microsoft -Name "Teams" 
-    New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Teams -Name "IsWVDEnvironment" -Type "Dword" -Value "1"
-    Start-Sleep -s 5
+        #regedit teams for wvd
+        New-Item -Path HKLM:\SOFTWARE\Microsoft -Name "Teams" 
+        New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Teams -Name "IsWVDEnvironment" -Type "Dword" -Value "1"
+        Start-Sleep -s 5
     
-    #Variables
-    $CSource = "https://aka.ms/vs/16/release/vc_redist.x64.exe"
-    $RDWRedirectorSource = "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4AQBt"
-    $TeamsSource = "https://teams.microsoft.com/downloads/desktopurl?env=production&plat=windows&arch=x64&managedInstaller=true&download=true"
-    $Clocation = "C:\temp\vc_redist.x64.exe"
-    $RDWRedirectionLocation = "C:\temp\MsRdcWebRTCSvc_HostSetup_1.0.2006.11001_x64.msi"
-    $TeamsLocation = "C:\temp\Teams_windows_x64.msi"
+        #Variables
+        $CSource = "https://aka.ms/vs/16/release/vc_redist.x64.exe"
+        $RDWRedirectorSource = "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4AQBt"
+        $TeamsSource = "https://teams.microsoft.com/downloads/desktopurl?env=production&plat=windows&arch=x64&managedInstaller=true&download=true"
+        $Clocation = "C:\temp\vc_redist.x64.exe"
+        $RDWRedirectionLocation = "C:\temp\MsRdcWebRTCSvc_HostSetup_1.0.2006.11001_x64.msi"
+        $TeamsLocation = "C:\temp\Teams_windows_x64.msi"
 
 
-    #Download C++ Runtime
-    invoke-WebRequest -Uri $Csource -OutFile $Clocation
-    Start-Sleep -s 5
-    #Download RDCWEBRTCSvc
-    invoke-WebRequest -Uri $RDWRedirectorSource -OutFile $RDWRedirectionLocation
-    Start-Sleep -s 5
-    #Download Teams 
-    invoke-WebRequest -Uri $TeamsSource -OutFile $TeamsLocation
-    Start-Sleep -s 5
+        #Download C++ Runtime
+        invoke-WebRequest -Uri $Csource -OutFile $Clocation
+        Start-Sleep -s 5
+        #Download RDCWEBRTCSvc
+        invoke-WebRequest -Uri $RDWRedirectorSource -OutFile $RDWRedirectionLocation
+        Start-Sleep -s 5
+        #Download Teams 
+        invoke-WebRequest -Uri $TeamsSource -OutFile $TeamsLocation
+        Start-Sleep -s 5
 
-    #Install C++ runtime
-    Start-Process -FilePath $Clocation -ArgumentList '/q', '/norestart'
-    Start-Sleep -s 10
-    #Install MSRDCWEBTRCSVC
-    msiexec /i $RDWRedirectionLocation /q /n
-    Start-Sleep -s 10
-    # Install Teams
-    msiexec /i $TeamsLocation /l*v teamsinstall.txt ALLUSER=1 ALLUSERS=1 /q
-    Start-Sleep -s 10
+        #Install C++ runtime
+        Start-Process -FilePath $Clocation -ArgumentList '/q', '/norestart'
+        Start-Sleep -s 10
+        #Install MSRDCWEBTRCSVC
+        msiexec /i $RDWRedirectionLocation /q /n
+        Start-Sleep -s 10
+        # Install Teams
+        msiexec /i $TeamsLocation /l*v teamsinstall.txt ALLUSER=1 ALLUSERS=1 /q
+        Start-Sleep -s 10
+    }
 }
 
 if ($useAVDOptimizer -eq 'true'){
