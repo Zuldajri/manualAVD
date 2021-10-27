@@ -19,8 +19,11 @@ Param(
 
 #Step 1
 #Module and Connection
-Install-Module Az -Force
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Install-Module -Name PowerShellGet -Force -AllowClobber
+Install-Module -Name Az -force -AllowClobber
 Import-Module Az -Force
+Import-Module Az.Accounts -force 
 Install-Module azuread -Force
 Import-Module azuread -Force
 #Connection Needed for Azure 
