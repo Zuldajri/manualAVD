@@ -19,10 +19,10 @@ Param(
 
 #Step 1
 #Module and Connection
-Install-Module AZ
-Import-Module AZ
-Install-Module azuread
-Import-Module azuread
+Install-Module Az -Force
+Import-Module Az -Force
+Install-Module azuread -Force
+Import-Module azuread -Force
 #Connection Needed for Azure 
 $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
 $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
@@ -73,11 +73,11 @@ if ($domainType -eq 'AD'){
     # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
     .\CopyToPSPath.ps1
     #Import AzFilesHybrid module
-    Import-Module -Name AzFilesHybrid
+    Import-Module -Name AzFilesHybrid -Force
 
     #Step 4
     # Register the target storage account with your active directory environment
-    Import-Module -Name AzFilesHybrid
+    Import-Module -Name AzFilesHybrid -Force
     Join-AzStorageAccountForAuth `
         -ResourceGroupName $ResourceGroupName `
         -Name $StorageAccountName `
