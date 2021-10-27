@@ -31,9 +31,7 @@ $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
 $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
 Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
 Select-AzSubscription -SubscriptionId $SubscriptionId
-#ADGroup Creation
-if (!(Get-AzADGroup -DisplayName "AVD-Users")){New-AzADGroup -Description "AVD-Users" -DisplayName "AVD-Users" -MailNickName "AVD-Users"}
-if (!(Get-AzADGroup -DisplayName "AVD-Admin")){New-AzADGroup -Description "AVD-Admin" -DisplayName "AVD-Admin" -MailNickName "AVD-Admin"}
+
 
 if ($rdshGalleryImageSKU -eq '2016-Datacenter'){
     #enable TLS 1.2 to work for Windows Server 2016 environments
