@@ -178,9 +178,9 @@ $connectionString = '\\' + $StorageAccountName + '.file.core.windows.net\userpro
 
 
 #Step 8 Test/Create Temp Directory
-
-if((Test-Path c:\temp) -eq $false) {
-    Add-Content -LiteralPath C:\New-AVDSessionHost.log "Create C:\temp Directory"
+New-Item -Path "C:\temp\New-AVDSessionHost.log" -ItemType File
+if((Test-Path C:\temp) -eq $false) {
+    Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Create C:\temp Directory"
     Write-Host `
         -ForegroundColor Cyan `
         -BackgroundColor Black `
@@ -188,14 +188,14 @@ if((Test-Path c:\temp) -eq $false) {
     New-Item -Path c:\temp -ItemType Directory
 }
 else {
-    Add-Content -LiteralPath C:\New-AVDSessionHost.log "C:\temp Already Exists"
+    Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "C:\temp Already Exists"
     Write-Host `
         -ForegroundColor Yellow `
         -BackgroundColor Black `
         "temp directory already exists"
 }
 if((Test-Path $LocalAVDpath) -eq $false) {
-    Add-Content -LiteralPath C:\New-AVDSessionHost.log "Create C:\temp\AVD Directory"
+    Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Create C:\temp\AVD Directory"
     Write-Host `
         -ForegroundColor Cyan `
         -BackgroundColor Black `
@@ -203,38 +203,38 @@ if((Test-Path $LocalAVDpath) -eq $false) {
     New-Item -Path $LocalAVDpath -ItemType Directory
 }
 else {
-    Add-Content -LiteralPath C:\New-AVDSessionHost.log "C:\temp\AVD Already Exists"
+    Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "C:\temp\AVD Already Exists"
     Write-Host `
         -ForegroundColor Yellow `
         -BackgroundColor Black `
         "c:\temp\AVD directory already exists"
 }
-New-Item -Path C:\ -Name New-AVDSessionHost.log -ItemType File
+
 Add-Content `
--LiteralPath C:\New-AVDSessionHost.log `
+-LiteralPath C:\temp\New-AVDSessionHost.log `
 "
 ProfilePath       = $connectionString
 "
 
 #Step 8    Download AVD Componants    
 
-Add-Content -LiteralPath C:\New-AVDSessionHost.log "Downloading FSLogix"
+Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Downloading FSLogix"
 Invoke-WebRequest -Uri $FSLogixURI -OutFile "$LocalAVDpath\$FSInstaller"
 
 #Step 9    Prep for WVD Install  
 
-Add-Content -LiteralPath C:\New-AVDSessionHost.log "Unzip FSLogix"
+Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Unzip FSLogix"
 Expand-Archive `
     -LiteralPath "C:\temp\AVD\$FSInstaller" `
     -DestinationPath "$LocalAVDpath\FSLogix" `
     -Force `
     -Verbose
 cd $LocalAVDpath 
-Add-Content -LiteralPath C:\New-AVDSessionHost.log "UnZip FXLogix Complete"
+Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "UnZip FXLogix Complete"
 
 #Step 10    FSLogix Install
 
-Add-Content -LiteralPath C:\New-AVDSessionHost.log "Installing FSLogix"
+Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Installing FSLogix"
 $fslogix_deploy_status = Start-Process `
     -FilePath "$LocalAVDpath\FSLogix\x64\Release\FSLogixAppsSetup.exe" `
     -ArgumentList "/install /quiet" `
@@ -243,15 +243,12 @@ $fslogix_deploy_status = Start-Process `
 
 #Step 11    FSLogix Local Group Policy available
 
-$SourcePathAdml = "$LocalAVDpath\FSLogix\fslogix.adml"
-$SourcePathAdmx = "$LocalAVDpath\FSLogix\fslogix.admx"
-
-Move-item –path $SourcePathAdml –destination C:\Windows\PolicyDefinitions\en-US
-Move-item –path $SourcePathAdmx –destination C:\Windows\PolicyDefinitions
+Move-item –path C:\temp\AVD\FSLogix\fslogix.adml –destination C:\Windows\PolicyDefinitions\en-US\fslogix.adml
+Move-item –path C:\temp\AVD\FSLogix\fslogix.admx –destination C:\Windows\PolicyDefinitions\fslogix.admx
 
 #Step 12    FSLogix User Profile Settings
 
-Add-Content -LiteralPath C:\New-AVDSessionHost.log "Configure FSLogix Profile Settings"
+Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Configure FSLogix Profile Settings"
 Push-Location 
 Set-Location HKLM:\SOFTWARE\
 New-Item `
@@ -361,16 +358,16 @@ $xmllocation= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$Direc
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
 
 #Directory Creation for Teams Exclusion
-$DirectoryID= "T:\Teams"
-$Directory= "Teams"
-New-Item -Path $DirectoryID -ItemType Directory
+$DirectoryIDT= "T:\Teams"
+$DirectoryT= "Teams"
+New-Item -Path $DirectoryIDT -ItemType Directory
 
 #Download the Xmlredirection
-$localpath2 = "c:\temp\avd\redirection.xml"
+$localpath2 = "C:\temp\AVD\redirection.xml"
 $xmlurl= "https://raw.githubusercontent.com/Zuldajri/AVD/main/redirections.xml"
 Invoke-WebRequest -Uri $xmlurl -OutFile $localpath2
-Move-item –path $localpath2 –destination $DirectoryID
-$connectionString2= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory"
+Move-item –path "C:\temp\AVD\redirection.xml" –destination "T:\Teams\redirection.xml"
+$connectionString2= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$DirectoryT"
 
 
 
@@ -453,8 +450,7 @@ if ($useAVDOptimizer -eq 'true'){
         -Verbose
 
 #    Run WVD Optimize Script    
-    New-Item -Path C:\Optimize\ -Name install.log -ItemType File -Force
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force -Verbose
+    New-Item -Path "C:\Optimize\install.log" -ItemType File -Force
     add-content c:\Optimize\install.log "Starting Optimizations"  
     & C:\Optimize\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -Optimizations $Optimizations -AcceptEULA -Verbose
     Start-Sleep -s 15
