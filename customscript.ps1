@@ -25,9 +25,7 @@ Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name PowerShellGet -Force -AllowClobber
 Install-Module -Name Az -force -AllowClobber
 Import-Module Az -Force
-Import-Module Az.Accounts -force 
-Install-Module azuread -Force
-Import-Module azuread -Force
+
 #Connection Needed for Azure 
 $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
 $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
@@ -47,7 +45,7 @@ if ($rdshGalleryImageSKU -eq '2016-Datacenter'){
 #Variable to not modify
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $AzFileSource = "https://github.com/Zuldajri/AVD/blob/main/AzFilesHybrid.zip?raw=true"
-$locationAzFiledownload = "C:\AzFilesHybrid.zip"
+$locationAzFiledownload = "C:\AzFilesHybrid\AzFileHybrid.zip"
 $folder = "C:\AzFileHybrid"
 $UserGroupName = "AVD-Users"
 $AdminGroupName = "AVD-Admin"
@@ -57,6 +55,13 @@ $AccountType = "ComputerAccount"
 $DirectoryID= "T:\Profiles"
 $Directory= "Profiles"
 $OrganizationalUnitDistinguishedName= ""
+$RBACAdmin1 = "Desktop Virtualization Application Group Contributor"
+$RBACAdmin2 = "Desktop Virtualization Contributor"
+$RBACAdmin3 = "Desktop Virtualization Host Pool Contributor"
+$RBACAdmin4 = "Desktop Virtualization Session Host Operator"
+$RBACAdmin5 = "Desktop Virtualization User Session Operator"
+$RBACAdmin6 = "Desktop Virtualization Workspace Contributor"
+$RBACUser1 = "Desktop Virtualization User"
 
 
 
@@ -68,9 +73,9 @@ if ($domainType -eq 'AD'){
     New-Item -Path $folder -ItemType Directory
     #Download AzFile and Unzip AzFile
     Invoke-WebRequest -Uri $AzFileSource -OutFile $locationAzFiledownload
-    Expand-Archive D:\AzFilesHybrid.zip -DestinationPath D:\AzFileHybrid
+    Expand-Archive C:\AzFilesHybrid\AzFileHybrid.zip -DestinationPath C:\AzFileHybrid\
     #Set the Location
-    cd D:\AzFileHybrid
+    cd C:\AzFileHybrid\
     # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
     .\CopyToPSPath.ps1
     #Import AzFilesHybrid module
@@ -112,6 +117,30 @@ $scope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/provi
 New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $FileShareContributorRole.Name -Scope $scope
 
 #Step 5
+#Add the Admin Rights to the Admin Group and User Group
+$RBACA1 = Get-AzRoleDefinition $RBACAdmin1
+$RBACA2 = Get-AzRoleDefinition $RBACAdmin2
+$RBACA3 = Get-AzRoleDefinition $RBACAdmin3
+$RBACA4 = Get-AzRoleDefinition $RBACAdmin4
+$RBACA5 = Get-AzRoleDefinition $RBACAdmin5
+$RBACA6 = Get-AzRoleDefinition $RBACAdmin6
+$RBACU1 = Get-AzRoleDefinition $RBACUser1
+
+#Use the built-in roles:
+#Constrain the scope to the target Azure Sub
+$scopeRBAC = "/subscriptions/$SubscriptionId"
+#Assign the custom role to the target identity with the specified scope.
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA1.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA2.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA3.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA4.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA5.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA6.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACU1.Name -Scope $scopeRBAC
+New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $RBACU1.Name -Scope $scopeRBAC
+
+
+#Step 6
 #  Run the code below to test the connection and mount the share
 $connectTestResult = Test-NetConnection -ComputerName "$StorageAccountName.file.core.windows.net" -Port 445
 if ($connectTestResult.TcpTestSucceeded)
@@ -123,7 +152,7 @@ else
   Write-Error -Message "Unable to reach the Azure storage account via port 445. Check to make sure your organization or ISP is not blocking port 445, or use Azure P2S VPN,   Azure S2S VPN, or Express Route to tunnel SMB traffic over a different port."
 }
 
-#Step 6 Directory and NTFS
+#Step 7 Directory and NTFS
 New-Item -Path $DirectoryID -ItemType Directory
 
 #Set the NTFS Right
@@ -132,24 +161,23 @@ icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /re
 icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /grant 'CREATOR OWNER:(OI)(CI)(IO)(M)'
 icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /remove "Authenticated Users" 
 icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /remove "Builtin\Users"
-icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /grant $domainName\"WVD-Users":M
-icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /grant $domainName\"WVD-Admin":F
+icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /grant $domainName\"AVD-Users":M
+icacls \\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory /grant $domainName\"AVD-Admin":F
 
 
 
-#Step 7 FSLogix Variables
+#Step 8 FSLogix Variables
 
-$LocalAVDpath = "c:\temp\avd"
+$LocalAVDpath = "C:\temp\AVD"
 $FSLogixURI  = "https://aka.ms/fslogix_download"
 $FSInstaller = "FSLogixAppsSetup.zip"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$connectionString = '\\' + $StorageAccountName + '.file.core.windows.net\userprofiles'
+$connectionString = '\\' + $StorageAccountName + '.file.core.windows.net\userprofiles\Profiles'
 
 
-#create share name for fslogix
-# $shareName = $StorageAccountName+'.file.core.windows.net'
 
-#Step 7 Test/Create Temp Directory
+
+#Step 8 Test/Create Temp Directory
 
 if((Test-Path c:\temp) -eq $false) {
     Add-Content -LiteralPath C:\New-AVDSessionHost.log "Create C:\temp Directory"
@@ -181,19 +209,19 @@ else {
         -BackgroundColor Black `
         "c:\temp\AVD directory already exists"
 }
-New-Item -Path c:\ -Name New-AVDSessionHost.log -ItemType File
+New-Item -Path C:\ -Name New-AVDSessionHost.log -ItemType File
 Add-Content `
 -LiteralPath C:\New-AVDSessionHost.log `
 "
 ProfilePath       = $connectionString
 "
 
-#Step 7    Download AVD Componants    
+#Step 8    Download AVD Componants    
 
 Add-Content -LiteralPath C:\New-AVDSessionHost.log "Downloading FSLogix"
 Invoke-WebRequest -Uri $FSLogixURI -OutFile "$LocalAVDpath\$FSInstaller"
 
-#Step 8    Prep for WVD Install  
+#Step 9    Prep for WVD Install  
 
 Add-Content -LiteralPath C:\New-AVDSessionHost.log "Unzip FSLogix"
 Expand-Archive `
@@ -204,7 +232,7 @@ Expand-Archive `
 cd $LocalAVDpath 
 Add-Content -LiteralPath C:\New-AVDSessionHost.log "UnZip FXLogix Complete"
 
-#Step 9    FSLogix Install
+#Step 10    FSLogix Install
 
 Add-Content -LiteralPath C:\New-AVDSessionHost.log "Installing FSLogix"
 $fslogix_deploy_status = Start-Process `
@@ -213,7 +241,7 @@ $fslogix_deploy_status = Start-Process `
     -Wait `
     -Passthru
 
-#Step 9    FSLogix Local Group Policy available
+#Step 11    FSLogix Local Group Policy available
 
 $SourcePathAdml = "$LocalAVDpath\FSLogix\fslogix.adml"
 $SourcePathAdmx = "$LocalAVDpath\FSLogix\fslogix.admx"
@@ -221,7 +249,7 @@ $SourcePathAdmx = "$LocalAVDpath\FSLogix\fslogix.admx"
 Move-item –path $SourcePathAdml –destination C:\Windows\PolicyDefinitions\en-US
 Move-item –path $SourcePathAdmx –destination C:\Windows\PolicyDefinitions
 
-#Step 10    FSLogix User Profile Settings
+#Step 12    FSLogix User Profile Settings
 
 Add-Content -LiteralPath C:\New-AVDSessionHost.log "Configure FSLogix Profile Settings"
 Push-Location 
@@ -289,7 +317,7 @@ New-ItemProperty `
 Pop-Location
 
 
-#Step 11    Add Defender Exclusions for FSLogix
+#Step 13    Add Defender Exclusions for FSLogix
 
 $filelist = `
 "%ProgramFiles%\FSLogix\Apps\frxdrv.sys", `
@@ -316,19 +344,21 @@ Foreach($item in $processlist){
 
 
 if ($profileType -eq 'Graphics'){
-#Step 12    enable GPU Rendering / sets AVC Encoding / Full Screen Rendering
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v bEnumerateHWBeforeSW  /t REG_DWORD /d 1 /f
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v AVC444ModePreferred  /t REG_DWORD /d 1 /f
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v AVCHardwareEncodePreferred  /t REG_DWORD /d 1 /f
+    #Step 12    enable GPU Rendering / sets AVC Encoding / Full Screen Rendering
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v bEnumerateHWBeforeSW  /t REG_DWORD /d 1 /f
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v AVC444ModePreferred  /t REG_DWORD /d 1 /f
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v AVCHardwareEncodePreferred  /t REG_DWORD /d 1 /f
 
-sleep 10
-gpupdate.exe /force
-sleep 10
+    sleep 10
+    gpupdate.exe /force
+    sleep 10
 }
 
-#Step 13    FslogixTeamsExclusions
+#Step 14    FslogixTeamsExclusions
 
 $xmllocation= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory"
+
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
 
 #Directory Creation for Teams Exclusion
 $DirectoryID= "T:\Teams"
@@ -336,11 +366,13 @@ $Directory= "Teams"
 New-Item -Path $DirectoryID -ItemType Directory
 
 #Download the Xmlredirection
-$xmllocation= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory"
+$localpath2 = "c:\temp\avd\redirection.xml"
 $xmlurl= "https://raw.githubusercontent.com/Zuldajri/AVD/main/redirections.xml"
+Invoke-WebRequest -Uri $xmlurl -OutFile $localpath2
+Move-item –path $localpath2 –destination $DirectoryID
 $connectionString2= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$Directory"
 
-Invoke-WebRequest -Uri $xmlurl -OutFile $xmllocation
+
 
 #Fslogix regedit configuration
 Push-Location 
@@ -356,7 +388,7 @@ New-ItemProperty `
 
 
 
-#Step 14    Teams installation
+#Step 15    Teams installation
 
 if ($installTeams -eq 'true'){
     if ($rdshGalleryImageSKU -contains 'Datacenter'){
@@ -398,7 +430,7 @@ if ($installTeams -eq 'true'){
 }
 
 if ($useAVDOptimizer -eq 'true'){
-#Step 15    WVD Optimization
+#Step 16    WVD Optimization
 
 
     $Optimizations = "All"
@@ -425,6 +457,7 @@ if ($useAVDOptimizer -eq 'true'){
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force -Verbose
     add-content c:\Optimize\install.log "Starting Optimizations"  
     & C:\Optimize\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -Optimizations $Optimizations -AcceptEULA -Verbose
+    Start-Sleep -s 15
 
 }
 
