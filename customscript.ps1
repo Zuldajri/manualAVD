@@ -18,6 +18,7 @@ Param(
   [string] $osDiskSize,
   [string] $timeZone,
   [string] $winHomeLocation,
+  [string] $winCulture,
   [string] $installTeams
 )
 
@@ -532,4 +533,5 @@ Set-TimeZone -Id $timeZone
 #Step 20    Set Regional Format
 Set-WinHomeLocation -GeoId $winHomeLocation
 
-
+#Step 21    Set Windows Culture
+Set-Culture -CultureInfo $winCulture
