@@ -527,8 +527,5 @@ if ($useScalingPlan -eq 'true'){
     
 }
 
-if ($osDiskSize -ne '127' -and $osDiskSize -ne '0') {
-    #Step 18    Extend OS Disk
-    Resize-Partition -DiskNumber 0 -PartitionNumber 2 -Size ($osDiskSizeGB)
-}
+
 
