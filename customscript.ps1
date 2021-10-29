@@ -370,7 +370,7 @@ $localpath2 = "C:\temp\AVD\redirection.xml"
 $xmlurl= "https://raw.githubusercontent.com/Zuldajri/AVD/main/redirections.xml"
 Invoke-WebRequest -Uri $xmlurl -OutFile $localpath2
 sleep 10
-mv C:\temp\AVD\redirection.xml T:\Teams\redirection.xml
+mv C:\temp\AVD\redirection.xml T:\Teams\redirections.xml
 $connectionString2= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$DirectoryT"
 
 
