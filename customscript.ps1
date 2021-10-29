@@ -15,6 +15,7 @@ Param(
   [string] $ObjectIDGroupAdmin,
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
+  [string] $osDiskSize,
   [string] $installTeams
 )
 
@@ -463,7 +464,7 @@ if ($useAVDOptimizer -eq 'true'){
 
 
 if ($useScalingPlan -eq 'true'){
-    #Step 16    AVD Autoscale
+    #Step 17    AVD Autoscale
 
     if (!(Get-AzRoleDefinition -Name "AVD Autoscale")) {
         Write-Host "Role does not exist, creating."
@@ -516,4 +517,9 @@ if ($useScalingPlan -eq 'true'){
     $avdSP = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://mrs-Prod.ame.gbl/mrs-RDInfra-prod"}
     New-AzRoleAssignment -ObjectId $avdSP.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"
     
+}
+
+if ($osDiskSize -ne '127' -and $osDiskSize -ne '0') {
+    #Step 18    Extend OS Disk
+    Resize-Partition -DiskNumber 0 -PartitionNumber 2 -Size ($osDiskSizeGB)
 }
