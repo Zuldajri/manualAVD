@@ -16,6 +16,7 @@ Param(
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
   [string] $osDiskSize,
+  [string] $timeZone,
   [string] $installTeams
 )
 
@@ -523,3 +524,8 @@ if ($osDiskSize -ne '127' -and $osDiskSize -ne '0') {
     #Step 18    Extend OS Disk
     Resize-Partition -DiskNumber 0 -PartitionNumber 2 -Size ($osDiskSizeGB)
 }
+
+#Step 19    Set Timezone
+Set-TimeZone -Id $timeZone
+
+
