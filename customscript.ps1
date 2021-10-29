@@ -241,6 +241,8 @@ $fslogix_deploy_status = Start-Process `
     -Wait `
     -Passthru
 
+sleep 10
+
 #Step 11    FSLogix Local Group Policy available
 
 mv C:\temp\AVD\FSLogix\fslogix.adml C:\Windows\PolicyDefinitions\en-US\fslogix.adml
@@ -367,6 +369,7 @@ New-Item -Path $DirectoryIDT -ItemType Directory
 $localpath2 = "C:\temp\AVD\redirection.xml"
 $xmlurl= "https://raw.githubusercontent.com/Zuldajri/AVD/main/redirections.xml"
 Invoke-WebRequest -Uri $xmlurl -OutFile $localpath2
+sleep 10
 mv C:\temp\AVD\redirection.xml T:\Teams\redirection.xml
 $connectionString2= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$DirectoryT"
 
