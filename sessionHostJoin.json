@@ -202,8 +202,7 @@
         "imageVmName": "imageVM",
         "publicIpAddressName": "imageVM-PIP",
         "publicIpAddress": { "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]" },
-        "location": "[resourceGroup().location]",
-        "osDiskSize": "[if(equals(parameters('osDiskSize'), 128), '127', if(equals(parameters('osDiskSize'), 256), '255', if(equals(parameters('osDiskSize'), 512), '511', if(equals(parameters('osDiskSize'), 1024), '1023', ''))))]"
+        "location": "[resourceGroup().location]"
     },
     "resources": [
         {
