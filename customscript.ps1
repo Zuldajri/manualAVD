@@ -17,6 +17,7 @@ Param(
   [string] $useScalingPlan,
   [string] $osDiskSize,
   [string] $timeZone,
+  [string] $winHomeLocation,
   [string] $installTeams
 )
 
@@ -527,5 +528,8 @@ if ($osDiskSize -ne '127' -and $osDiskSize -ne '0') {
 
 #Step 19    Set Timezone
 Set-TimeZone -Id $timeZone
+
+#Step 20    Set Regional Format
+Set-WinHomeLocation -GeoId $winHomeLocation
 
 
