@@ -243,8 +243,9 @@ $fslogix_deploy_status = Start-Process `
 
 #Step 11    FSLogix Local Group Policy available
 
-Move-item –path C:\temp\AVD\FSLogix\fslogix.adml –destination C:\Windows\PolicyDefinitions\en-US\fslogix.adml
-Move-item –path C:\temp\AVD\FSLogix\fslogix.admx –destination C:\Windows\PolicyDefinitions\fslogix.admx
+mv C:\temp\AVD\FSLogix\fslogix.adml C:\Windows\PolicyDefinitions\en-US\fslogix.adml
+mv C:\temp\AVD\FSLogix\fslogix.admx C:\Windows\PolicyDefinitions\fslogix.admx
+
 
 #Step 12    FSLogix User Profile Settings
 
@@ -366,7 +367,7 @@ New-Item -Path $DirectoryIDT -ItemType Directory
 $localpath2 = "C:\temp\AVD\redirection.xml"
 $xmlurl= "https://raw.githubusercontent.com/Zuldajri/AVD/main/redirections.xml"
 Invoke-WebRequest -Uri $xmlurl -OutFile $localpath2
-Move-item –path "C:\temp\AVD\redirection.xml" –destination "T:\Teams\redirection.xml"
+mv C:\temp\AVD\redirection.xml T:\Teams\redirection.xml
 $connectionString2= "\\$StorageAccountName.file.core.windows.net\$fileShareName\$DirectoryT"
 
 
