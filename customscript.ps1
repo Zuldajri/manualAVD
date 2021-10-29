@@ -16,9 +16,6 @@ Param(
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
   [string] $osDiskSize,
-  [string] $timeZone,
-  [string] $winHomeLocation,
-  [string] $winCulture,
   [string] $installTeams
 )
 
@@ -527,11 +524,3 @@ if ($osDiskSize -ne '127' -and $osDiskSize -ne '0') {
     Resize-Partition -DiskNumber 0 -PartitionNumber 2 -Size ($osDiskSizeGB)
 }
 
-#Step 19    Set Timezone
-Set-TimeZone -Id $timeZone
-
-#Step 20    Set Regional Format
-Set-WinHomeLocation -GeoId $winHomeLocation
-
-#Step 21    Set Windows Culture
-Set-Culture -CultureInfo $winCulture
