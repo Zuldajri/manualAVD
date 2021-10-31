@@ -29,7 +29,17 @@ if ($size -lt $maxSize){
      Resize-Partition -DriveLetter $osDrive -Size $maxSize
 }
 
+# Set Timezone
+Set-TimeZone -Id "$timeZone"
 
+
+#Set Regional Format
+$winHomeLocation = $winHomeLocation -as [int]
+Set-WinHomeLocation -GeoId $winHomeLocation
+
+#Set Windows Culture
+$winCulture = $winCulture -as [int]
+Set-Culture -CultureInfo $winCulture
 
 #Step 1
 #Module and Connection
@@ -530,16 +540,6 @@ if ($useScalingPlan -eq 'true'){
     
 }
 
-#Step 18    Set Timezone
-Set-TimeZone -Id "$timeZone"
 
-
-#Step 19    Set Regional Format
-$winHomeLocation = $winHomeLocation -as [int]
-Set-WinHomeLocation -GeoId $winHomeLocation
-
-#Step 20    Set Windows Culture
-$winCulture = $winCulture -as [int]
-Set-Culture -CultureInfo $winCulture
 
 
