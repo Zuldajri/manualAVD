@@ -15,9 +15,6 @@ Param(
   [string] $ObjectIDGroupAdmin,
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
-  [string] $timeZone,
-  [string] $winHomeLocation,
-  [string] $winCulture,
   [string] $installTeams
 )
 
@@ -29,17 +26,6 @@ if ($size -lt $maxSize){
      Resize-Partition -DriveLetter $osDrive -Size $maxSize
 }
 
-# Set Timezone
-Set-TimeZone -Id "$timeZone"
-
-
-#Set Regional Format
-$winHomeLocation = $winHomeLocation -as [int]
-Set-WinHomeLocation -GeoId $winHomeLocation
-
-#Set Windows Culture
-$winCulture = $winCulture -as [int]
-Set-Culture -CultureInfo $winCulture
 
 #Step 1
 #Module and Connection
