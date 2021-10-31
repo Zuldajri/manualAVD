@@ -185,18 +185,6 @@
         "objectIDGroupAdmin": {
             "defaultValue": "",
             "type": "string"
-        },
-	"timeZone": {
-            "defaultValue": "",
-            "type": "string"
-        },
-	"winHomeLocation": {
-            "defaultValue": "",
-            "type": "string"
-        },
-	"winCulture": {
-            "defaultValue": "",
-            "type": "string"
         }
     },
     "variables": {
@@ -389,7 +377,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('objectIDGroupUser'), ' ', parameters('objectIDGroupAdmin'), ' ',parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('timeZone'), ' ', parameters('winHomeLocation'), ' ', parameters('winCulture'), ' ',parameters('installTeams'))]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('objectIDGroupUser'), ' ', parameters('objectIDGroupAdmin'), ' ',parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('installTeams'))]"
 
                 }
             },
@@ -555,7 +543,7 @@
                     "fileUris": [
                        "https://raw.githubusercontent.com/Zuldajri/AVD/main/customscript.ps1"
                    ],
-                   "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('objectIDGroupUser'), ' ', parameters('objectIDGroupAdmin'), ' ', parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('timeZone'), ' ', parameters('winHomeLocation'), ' ', parameters('winCulture'), ' ',parameters('installTeams'))]"
+                   "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File customscript.ps1', ' ', variables('tenantId'), ' ', variables('subscriptionID'), ' ', parameters('aadClientId'), ' ', parameters('aadClientSecret'), ' ', parameters('rdshGalleryImageSKU'), ' ', variables('ResourceGroupName'), ' ', parameters('storageAccountNameShare'), ' ', parameters('fileShareName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountNameShare')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', parameters('domainToJoin'), ' ', parameters('domainType'), ' ', parameters('profileType'), ' ', parameters('objectIDGroupUser'), ' ', parameters('objectIDGroupAdmin'), ' ', parameters('useAVDOptimizer'), ' ', parameters('useScalingPlan'), ' ', parameters('installTeams'))]"
                }
            }
        }
