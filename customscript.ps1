@@ -15,6 +15,9 @@ Param(
   [string] $ObjectIDGroupAdmin,
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
+  [string] $timeZone,
+  [string] $winHomeLocation,
+  [string] $winCulture,
   [string] $installTeams
 )
 
@@ -527,5 +530,16 @@ if ($useScalingPlan -eq 'true'){
     
 }
 
+#Step 18    Set Timezone
+Set-TimeZone -Id "$timeZone"
+
+
+#Step 19    Set Regional Format
+$winHomeLocation = $winHomeLocation -as [int]
+Set-WinHomeLocation -GeoId $winHomeLocation
+
+#Step 20    Set Windows Culture
+$winCulture = $winCulture -as [int]
+Set-Culture -CultureInfo $winCulture
 
 
