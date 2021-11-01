@@ -85,7 +85,21 @@ if ($domainType -eq 'AD'){
     #Set the Location
     cd C:\AzFileHybrid\
     # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
-    .\CopyToPSPath.ps1
+    $psModPath = $env:PSModulePath.Split(";")[0]
+    if (!(Test-Path -Path $psModPath)) {
+        New-Item -Path $psModPath -ItemType Directory | Out-Null
+    }
+
+    $psdFile = Import-PowerShellDataFile -Path C:\AzFileHybrid\AzFilesHybrid.psd1
+    $desiredModulePath = "$psModPath\AzFilesHybrid\$($psdFile.ModuleVersion)\"
+    if (!(Test-Path -Path $desiredModulePath)) {
+        New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
+    }
+    
+    mv C:\AzFileHybrid\AzFilesHybrid.psd1 $psModPath\AzFilesHybrid\$($psdFile.ModuleVersion)\AzFilesHybrid.psd1
+    mv C:\AzFileHybrid\AzFilesHybrid.psm1 $psModPath\AzFilesHybrid\$($psdFile.ModuleVersion)\AzFilesHybrid.psm1
+    
+    
     #Import AzFilesHybrid module
     Import-Module -Name AzFilesHybrid -Force
 
