@@ -521,8 +521,10 @@ if ($useScalingPlan -eq 'true'){
         Set-AzRoleDefinition -Role $role;
     }
 
-    $avdSP = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://mrs-Prod.ame.gbl/mrs-RDInfra-prod"}
-    New-AzRoleAssignment -ObjectId $avdSP.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"
+    $avdSP1 = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://mrs-Prod.ame.gbl/mrs-RDInfra-prod"}
+    if (!(Get-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"}
+    $avdSP2 = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://www.wvd.microsoft.com"}
+    if (!(Get-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"}
     
 }
 
