@@ -17,30 +17,31 @@
 			"type": "string",
 			"minLength": 1
 		},
-		"accessTier": {
+		"virtualNetworkResourceGroupName": {
 			"type": "string",
 			"minLength": 1
 		},
-		"minimumTlsVersion": {
+		"existingVnetName": {
 			"type": "string"
 		},
-		"supportsHttpsTrafficOnly": {
-			"type": "bool"
-		},
-		"allowBlobPublicAccess": {
-			"type": "bool"
-		},
-		"networkAclsBypass": {
+		"existingSubnetName": {
 			"type": "string"
-		},
-		"networkAclsDefaultAction": {
-			"type": "string"
-		},
-		"networkAclsVirtualNetworkRules": {
-			"type": "array"
 		}
 	},
 	"variables": {
+        "subscriptionID": "[subscription().subscriptionId]",
+        "accessTier": "Hot",
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": true,
+        "networkAclsBypass": "AzureServices",
+        "networkAclsDefaultAction": "Deny",
+        "vnetID": "[concat('/subscriptions/',variables('subscriptionID'),'/resourceGroups/',parameters('virtualNetworkResourceGroupName'),'/providers/Microsoft.Network/virtualNetworks/',parameters('existingVnetName'),'/subnets/',parameters('existingSubnetName'))]",
+        "networkAclsVirtualNetworkRules": [
+            {
+                "id": "[variables('vnetID')]"
+            }
+        ]
 	},
 	"resources": [
 		{
@@ -53,15 +54,15 @@
                 "name": "[parameters('shareStorageType')]"
             },
             "properties": {
-                "accessTier": "[parameters('accessTier')]",
-                "minimumTlsVersion": "[parameters('minimumTlsVersion')]",
-                "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]",
-                "allowBlobPublicAccess": "[parameters('allowBlobPublicAccess')]",
+                "accessTier": "[variables('accessTier')]",
+                "minimumTlsVersion": "[variables('minimumTlsVersion')]",
+                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
+                "allowBlobPublicAccess": "[variables('allowBlobPublicAccess')]",
                 "networkAcls": {
-                    "bypass": "[parameters('networkAclsBypass')]",
-                    "defaultAction": "[parameters('networkAclsDefaultAction')]",
+                    "bypass": "[variables('networkAclsBypass')]",
+                    "defaultAction": "[variables('networkAclsDefaultAction')]",
                     "ipRules": [],
-                    "virtualNetworkRules": "[parameters('networkAclsVirtualNetworkRules')]"
+                    "virtualNetworkRules": "[variables('networkAclsVirtualNetworkRules')]"
                 }
             }
         }
