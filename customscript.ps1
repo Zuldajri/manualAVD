@@ -110,7 +110,7 @@ if ($domainType -eq 'AD'){
         -ResourceGroupName $ResourceGroupName `
         -Name $StorageAccountName `
         -DomainAccountType $AccountType `
-        -OrganizationalUnitDistinguishedName $OrganizationalUnitDistinguishedName
+        -OrganizationalUnitDistinguishedName "Storage Accounts"
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
