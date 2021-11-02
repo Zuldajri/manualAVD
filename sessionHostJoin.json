@@ -185,6 +185,10 @@
         "objectIDGroupAdmin": {
             "defaultValue": "",
             "type": "string"
+        },
+	 "virtualNetworkResourceGroupName": {
+            "defaultValue": "",
+            "type": "string"
         }
     },
     "variables": {
