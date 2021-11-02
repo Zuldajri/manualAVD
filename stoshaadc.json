@@ -26,6 +26,9 @@
 		},
 		"existingSubnetName": {
 			"type": "string"
+		},
+		"fileShareName": {
+			"type": "string"
 		}
 	},
 	"variables": {
@@ -65,8 +68,18 @@
                     "virtualNetworkRules": "[variables('networkAclsVirtualNetworkRules')]"
                 }
             }
-        }
-		
+        },
+	{
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccountNameShare'), '/default/', parameters('fileShareName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountNameShare'))]"
+            ],
+            "properties": {
+                "shareQuota": 5120
+            }
+        }	
 	],
 	"outputs": {}
 }
