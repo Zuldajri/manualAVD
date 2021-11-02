@@ -104,7 +104,7 @@ if ($domainType -eq 'AD'){
         -ResourceGroupName $virtualNetworkResourceGroupName `
         -Name $StorageAccountName `
         -DomainAccountType $AccountType `
-        -OrganizationalUnitDistinguishedName ""
+        -OrganizationalUnitName "Computers"
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
