@@ -15,6 +15,7 @@ Param(
   [string] $ObjectIDGroupAdmin,
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
+  [string] $virtualNetworkResourceGroupName,
   [string] $installTeams
 )
 
@@ -53,8 +54,8 @@ if ($rdshGalleryImageSKU -eq '2016-Datacenter'){
 #Variable to not modify
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $AzFileSource = "https://github.com/Zuldajri/AVD/blob/main/AzFilesHybrid.zip?raw=true"
-$locationAzFiledownload = "C:\AzFilesHybrid\AzFileHybrid.zip"
-$folder = "C:\AzFileHybrid"
+$locationAzFiledownload = "C:\AzFilesHybrid\AzFilesHybrid.zip"
+$folder = "C:\AzFilesHybrid"
 $UserGroupName = "AVD-Users"
 $AdminGroupName = "AVD-Admin"
 $rolenameAdmin = "Storage File Data SMB Share Elevated Contributor"
@@ -79,9 +80,9 @@ if ($domainType -eq 'AD'){
     New-Item -Path $folder -ItemType Directory
     #Download AzFile and Unzip AzFile
     Invoke-WebRequest -Uri $AzFileSource -OutFile $locationAzFiledownload
-    Expand-Archive C:\AzFilesHybrid\AzFileHybrid.zip -DestinationPath C:\AzFileHybrid\
+    Expand-Archive C:\AzFilesHybrid\AzFilesHybrid.zip -DestinationPath C:\AzFilesHybrid\
     #Set the Location
-    cd C:\AzFileHybrid\
+    cd C:\AzFilesHybrid\
     # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
 
     $desiredModulePath = "$env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\"
@@ -89,8 +90,8 @@ if ($domainType -eq 'AD'){
         New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
     }
     
-    mv C:\AzFileHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psd1
-    mv C:\AzFileHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psm1
+    mv C:\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psd1
+    mv C:\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psm1
     
     
     #Import AzFilesHybrid module
@@ -100,14 +101,14 @@ if ($domainType -eq 'AD'){
     # Register the target storage account with your active directory environment
     Import-Module -Name AzFilesHybrid -Force
     Join-AzStorageAccountForAuth `
-        -ResourceGroupName $ResourceGroupName `
+        -ResourceGroupName $virtualNetworkResourceGroupName `
         -Name $StorageAccountName `
         -DomainAccountType $AccountType `
-        -OrganizationalUnitDistinguishedName "Storage Accounts"
+        -OrganizationalUnitDistinguishedName ""
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
-        -ResourceGroupName $ResourceGroupName `
+        -ResourceGroupName $virtualNetworkResourceGroupName `
         -Name $StorageAccountName
 
     $storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions
@@ -120,14 +121,14 @@ if ($domainType -eq 'AD'){
 $FileShareContributorRole = Get-AzRoleDefinition $rolenameAdmin 
 #Use one of the built-in roles: Storage File Data SMB Share Reader, Storage File Data SMB Share Contributor, Storage File Data SMB Share Elevated Contributor
 #Constrain the scope to the target file share
-$scope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
+$scope = "/subscriptions/$SubscriptionId/resourceGroups/$virtualNetworkResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
 #Assign the custom role to the target identity with the specified scope.
 New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $FileShareContributorRole.Name -Scope $scope
 #Get the name of the custom role
 $FileShareContributorRole = Get-AzRoleDefinition $rolenameUser 
 #Use one of the built-in roles: Storage File Data SMB Share Reader, Storage File Data SMB Share Contributor, Storage File Data SMB Share Elevated Contributor
 #Constrain the scope to the target file share
-$scope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
+$scope = "/subscriptions/$SubscriptionId/resourceGroups/$virtualNetworkResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
 #Assign the custom role to the target identity with the specified scope.
 New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $FileShareContributorRole.Name -Scope $scope
 
@@ -534,4 +535,3 @@ if ($useScalingPlan -eq 'true'){
     if (!(Get-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"}
     
 }
-
