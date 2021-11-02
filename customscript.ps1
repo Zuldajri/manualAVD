@@ -75,8 +75,6 @@ $RBACUser1 = "Desktop Virtualization User"
 
 if ($domainType -eq 'AD'){
     #Step 3
-    #Prepare the Join
-    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
     #Folder Creation for Unzip
     New-Item -Path $folder -ItemType Directory
     #Download AzFile and Unzip AzFile
@@ -85,19 +83,14 @@ if ($domainType -eq 'AD'){
     #Set the Location
     cd C:\AzFileHybrid\
     # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
-    $psModPath = $env:PSModulePath.Split(";")[0]
-    if (!(Test-Path -Path $psModPath)) {
-        New-Item -Path $psModPath -ItemType Directory | Out-Null
-    }
 
-    $psdFile = Import-PowerShellDataFile -Path C:\AzFileHybrid\AzFilesHybrid.psd1
-    $desiredModulePath = "$psModPath\AzFilesHybrid\$($psdFile.ModuleVersion)\"
+    $desiredModulePath = "$env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\"
     if (!(Test-Path -Path $desiredModulePath)) {
         New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
     }
     
-    mv C:\AzFileHybrid\AzFilesHybrid.psd1 $psModPath\AzFilesHybrid\$($psdFile.ModuleVersion)\AzFilesHybrid.psd1
-    mv C:\AzFileHybrid\AzFilesHybrid.psm1 $psModPath\AzFilesHybrid\$($psdFile.ModuleVersion)\AzFilesHybrid.psm1
+    mv C:\AzFileHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psd1
+    mv C:\AzFileHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psm1
     
     
     #Import AzFilesHybrid module
