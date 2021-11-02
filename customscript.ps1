@@ -152,14 +152,14 @@ $RBACU1 = Get-AzRoleDefinition $RBACUser1
 #Constrain the scope to the target Azure Sub
 $scopeRBAC = "/subscriptions/$SubscriptionId"
 #Assign the custom role to the target identity with the specified scope.
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA1.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA2.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA3.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA4.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA5.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA6.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACU1.Name -Scope $scopeRBAC
-New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $RBACU1.Name -Scope $scopeRBAC
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA1.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA1.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA2.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA2.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA3.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA3.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA4.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA4.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA5.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA5.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA6.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACA6.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACU1.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $RBACU1.Name -Scope $scopeRBAC}
+if (!(Get-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $RBACU1.Name -scope $scopeRBAC)){New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $RBACU1.Name -Scope $scopeRBAC}
 
 
 #Step 6
@@ -541,7 +541,4 @@ if ($useScalingPlan -eq 'true'){
     if (!(Get-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"}
     
 }
-
-
-
 
