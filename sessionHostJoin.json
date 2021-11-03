@@ -195,6 +195,7 @@
         "networkSecurityGroupRules": [],
         "artifactsLocation": "https://github.com/Zuldajri/AVD/blob/main/Configuration.zip?raw=true",
         "domainAdmin": "[if(contains(parameters('domainAdmin'), '@'), parameters('domainAdmin'), concat(parameters('domainToJoin'), '\\', parameters('domainAdmin')))]",
+	"existingDomainUsername": "[first(split(parameters('domainAdmin'), '@'))]",
         "isNsv4": "[if(contains(parameters('rdshVmSize'), '_v4'), 'true', 'false')]",
         "licenseType": "[if(contains(parameters('rdshGalleryImageSKU'), '10'), 'Windows_Client', 'Windows_Server')]",
         "ResourceGroupName": "[resourceGroup().name]",
