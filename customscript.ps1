@@ -73,7 +73,8 @@ $RBACAdmin4 = "Desktop Virtualization Session Host Operator"
 $RBACAdmin5 = "Desktop Virtualization User Session Operator"
 $RBACAdmin6 = "Desktop Virtualization Workspace Contributor"
 $RBACUser1 = "Desktop Virtualization User"
-$fulluser = "$($domainName)\$($existingDomainUsername)"
+$hostname = hostname
+$fulluser = "$($hostname)\$($existingDomainUsername)"
 $secpasswd = ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force
 $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secpasswd)
 
@@ -90,7 +91,7 @@ if ($domainType -eq 'AD'){
     cd C:\AzFilesHybrid\
     # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
 
-    $desiredModulePath = "$env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\"
+    $desiredModulePath = "$env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.4.0\"
     if (!(Test-Path -Path $desiredModulePath)) {
         New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
     }
