@@ -16,6 +16,8 @@ Param(
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
   [string] $virtualNetworkResourceGroupName,
+  [string] $existingDomainUsername,
+  [string] $domainAdminPassword,
   [string] $installTeams
 )
 
@@ -71,6 +73,9 @@ $RBACAdmin4 = "Desktop Virtualization Session Host Operator"
 $RBACAdmin5 = "Desktop Virtualization User Session Operator"
 $RBACAdmin6 = "Desktop Virtualization Workspace Contributor"
 $RBACUser1 = "Desktop Virtualization User"
+$fulluser = "$($domainName)\$($existingDomainUsername)"
+$secpasswd = ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force
+$mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secpasswd)
 
 
 
@@ -90,21 +95,36 @@ if ($domainType -eq 'AD'){
         New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
     }
     
-    mv C:\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psd1
-    mv C:\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.3.0\AzFilesHybrid.psm1
+    mv C:\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.4.0\AzFilesHybrid.psd1
+    mv C:\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.4.0\AzFilesHybrid.psm1
     
     
     #Import AzFilesHybrid module
     Import-Module -Name AzFilesHybrid -Force
 
-    #Step 4
-    # Register the target storage account with your active directory environment
-    Import-Module -Name AzFilesHybrid -Force
-    Join-AzStorageAccountForAuth `
-        -ResourceGroupName $virtualNetworkResourceGroupName `
-        -Name $StorageAccountName `
-        -DomainAccountType $AccountType `
-        -OrganizationalUnitName "Computers"
+
+    $scriptblock= {
+        #Step 4
+        Import-Module Az -Force
+
+        #Connection Needed for Azure 
+        $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
+        $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
+        Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
+        Select-AzSubscription -SubscriptionId $SubscriptionId
+
+        # Register the target storage account with your active directory environment
+        Import-Module -Name AzFilesHybrid -Force
+        Join-AzStorageAccountForAuth `
+            -ResourceGroupName $virtualNetworkResourceGroupName `
+            -Name $StorageAccountName `
+            -DomainAccountType $AccountType `
+            -OrganizationalUnitName "Computers"
+    }
+
+    $session = New-PSSession -cn $env:computername -Credential $mycreds 
+	Invoke-Command -Session $session -ScriptBlock $scriptblock 
+	Remove-PSSession -VMName $env:computername
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
@@ -115,6 +135,13 @@ if ($domainType -eq 'AD'){
     $storageAccount.AzureFilesIdentityBasedAuth.ActiveDirectoryProperties
 }
 
+Import-Module Az -Force
+
+#Connection Needed for Azure 
+$azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
+$psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
+Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
+Select-AzSubscription -SubscriptionId $SubscriptionId
 
 #Step 4
 #Add the Azure Right to the storage Account
