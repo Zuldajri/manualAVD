@@ -95,8 +95,8 @@ if ($domainType -eq 'AD'){
         New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
     }
     
-    mv C:\AzFilesHybrid\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psd1
-    mv C:\AzFilesHybrid\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psm1
+    mv C:\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psd1
+    mv C:\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psm1
     
     
     #Import AzFilesHybrid module
