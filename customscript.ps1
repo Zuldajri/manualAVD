@@ -115,17 +115,17 @@ if ($domainType -eq 'AD'){
     Import-Module Az -Force
 
     #Connection Needed for Azure 
-    $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
-    $psCred = New-Object System.Management.Automation.PSCredential($Using:aadClientId , $azurePassword)
-    Connect-AzAccount -Credential $psCred -TenantId $Using:TenantId  -ServicePrincipal
-    Select-AzSubscription -SubscriptionId $Using:SubscriptionId
+    $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
+    $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
+    Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
+    Select-AzSubscription -SubscriptionId $SubscriptionId
 
     # Register the target storage account with your active directory environment
     Import-Module -Name AzFilesHybrid -Force
     Join-AzStorageAccountForAuth `
-        -ResourceGroupName $Using:virtualNetworkResourceGroupName `
-        -Name $Using:StorageAccountName `
-        -DomainAccountType $Using:AccountType `
+        -ResourceGroupName $virtualNetworkResourceGroupName `
+        -Name $StorageAccountName `
+        -DomainAccountType $AccountType `
         -OrganizationalUnitName "Computers"
     
 
