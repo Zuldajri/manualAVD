@@ -80,12 +80,12 @@ $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secp
 
 
 if ($domainType -eq 'AD'){
-    Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
-    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name UseWUServer -Value 0
-    Restart-Service -Name wuauserv -Force
-    Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online –Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
-    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name UseWUServer -Value 1
-    Restart-Service -Name wuauserv -Force
+    Get-WindowsCapability -Name "RSAT*" -Online | Select-Object -Property DisplayName, State
+    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name "UseWUServer" -Value "0"
+    Restart-Service -Name "wuauserv" -Force
+    Get-WindowsCapability -Name "RSAT*" -Online | Add-WindowsCapability -Online –Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name "UseWUServer" -Value "1"
+    Restart-Service -Name "wuauserv" -Force
     Import-Module ActiveDirectory -Force
     ## Find the on-prem AD domain's GUID
     $DomainGuid = (Get-ADDomain -Identity $domainName).ObjectGuid.Guid
