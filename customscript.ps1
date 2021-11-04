@@ -80,51 +80,44 @@ $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secp
 
 
 if ($domainType -eq 'AD'){
-    #Step 3
-    #Folder Creation for Unzip
-    New-Item -Path $folder -ItemType Directory
-    #Download AzFile and Unzip AzFile
-    Invoke-WebRequest -Uri $AzFileSource -OutFile $locationAzFiledownload
-    Expand-Archive C:\AzFilesHybrid\AzFilesHybrid.zip -DestinationPath C:\AzFilesHybrid\
-    #Set the Location
-    cd C:\AzFilesHybrid\
-    # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
+    Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
+    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name UseWUServer -Value 0
+    Restart-Service -Name wuauserv -Force
+    Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online –Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
+    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name UseWUServer -Value 1
+    Restart-Service -Name wuauserv -Force
+    Import-Module ActiveDirectory -Force
+    ## Find the on-prem AD domain's GUID
+    $DomainGuid = (Get-ADDomain -Identity $domainName).ObjectGuid.Guid
+    ## Find the on-prem AD domain's SID
+    $DomainSid = (Get-ADDomain -Identity $domainName).DomainSID.Value
+    
+    #Step 4
+    Import-Module Az -Force
+    New-AzStorageAccountKey -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName -KeyName kerb1
+    $Token = (Get-AzStorageAccountKey -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName -ListKerbKey | Where-Object {$_.KeyName -eq "kerb1"}).Value
+    New-ADComputer -Name $StorageAccountName -AccountPassword (ConvertTo-SecureString -AsPlainText $Token -Force)
+    $stoUri = (Get-AzStorageAccount -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName).PrimaryEndpoints.File).Host
+    Set-ADComputer -Identity $StorageAccountName -ServicePrincipalNames @{Add="cifs/$stoUri"}
+    ## Find the storage account's AD computer account's SID
+    $StorAccountSid = (Get-ADComputer -Identity $StorageAccountName).SID.Value
 
-    $desiredModulePath = "$env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\"
-    if (!(Test-Path -Path $desiredModulePath)) {
-        New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
+    ## Provide Set-AzStorageAccount with all appropriate GUIDs and SIDs
+    ## along with the AD domain it should be a part of
+    $Splat = @{
+        ResourceGroupName = $virtualNetworkResourceGroupName
+        Name = $StorageAccountName
+        EnableActiveDirectoryDomainServicesForFile = $true
+        ActiveDirectoryDomainName = $domainName
+        ActiveDirectoryNetBiosDomainName = $domainName
+        ActiveDirectoryForestName = $domainName
+        ActiveDirectoryDomainGuid = $DomainGuid
+        ActiveDirectoryDomainsid = $DomainSid
+        ActiveDirectoryAzureStorageSid = $StorAccountSid
     }
+    Set-AzStorageAccount @Splat
+
     
-    mv C:\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psd1
-    mv C:\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psm1
-    
-    
-    #Import AzFilesHybrid module
-    Import-Module -Name AzFilesHybrid -Force
-
-
-    $scriptblock= {
-        #Step 4
-        Import-Module Az -Force
-
-        #Connection Needed for Azure 
-        $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
-        $psCred = New-Object System.Management.Automation.PSCredential($Using:aadClientId , $azurePassword)
-        Connect-AzAccount -Credential $psCred -TenantId $Using:TenantId  -ServicePrincipal
-        Select-AzSubscription -SubscriptionId $Using:SubscriptionId
-
-        # Register the target storage account with your active directory environment
-        Import-Module -Name AzFilesHybrid -Force
-        Join-AzStorageAccountForAuth `
-            -ResourceGroupName $Using:virtualNetworkResourceGroupName `
-            -Name $Using:StorageAccountName `
-            -DomainAccountType $Using:AccountType `
-            -OrganizationalUnitName "Computers"
-    }
-
-    $session = New-PSSession -cn $env:computername -Credential $mycreds 
-	Invoke-Command -Session $session -ScriptBlock $scriptblock 
-	Remove-PSSession -VMName $env:computername
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
