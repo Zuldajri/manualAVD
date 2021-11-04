@@ -93,7 +93,6 @@ if ($domainType -eq 'AD'){
     $DomainSid = (Get-ADDomain -Identity $domainName).DomainSID.Value
     
     #Step 4
-    Import-Module Az -Force
     New-AzStorageAccountKey -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName -KeyName kerb1
     $Token = (Get-AzStorageAccountKey -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName -ListKerbKey | Where-Object {$_.KeyName -eq "kerb1"}).Value
     New-ADComputer -Name $StorageAccountName -AccountPassword (ConvertTo-SecureString -AsPlainText $Token -Force)
@@ -104,19 +103,16 @@ if ($domainType -eq 'AD'){
 
     ## Provide Set-AzStorageAccount with all appropriate GUIDs and SIDs
     ## along with the AD domain it should be a part of
-    $Splat = @{
-        ResourceGroupName = $virtualNetworkResourceGroupName
-        Name = $StorageAccountName
-        EnableActiveDirectoryDomainServicesForFile = $true
-        ActiveDirectoryDomainName = $domainName
-        ActiveDirectoryNetBiosDomainName = $domainName
-        ActiveDirectoryForestName = $domainName
-        ActiveDirectoryDomainGuid = $DomainGuid
-        ActiveDirectoryDomainsid = $DomainSid
-        ActiveDirectoryAzureStorageSid = $StorAccountSid
-    }
-    Set-AzStorageAccount @Splat
-
+    Set-AzStorageAccount `
+        -ResourceGroupName $virtualNetworkResourceGroupName `
+        -Name $StorageAccountName `
+        -EnableActiveDirectoryDomainServicesForFile $true `
+        -ActiveDirectoryDomainName $domainName `
+        -ActiveDirectoryNetBiosDomainName $domainName `
+        -ActiveDirectoryForestName $domainName `
+        -ActiveDirectoryDomainGuid $DomainGuid `
+        -ActiveDirectoryDomainsid $DomainSid `
+        -ActiveDirectoryAzureStorageSid $StorAccountSid
     
 
     #Confirm the feature is enabled
@@ -124,8 +120,8 @@ if ($domainType -eq 'AD'){
         -ResourceGroupName $virtualNetworkResourceGroupName `
         -Name $StorageAccountName
 
-    $storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions
-    $storageAccount.AzureFilesIdentityBasedAuth.ActiveDirectoryProperties
+    echo $storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions
+    echo $storageAccount.AzureFilesIdentityBasedAuth.ActiveDirectoryProperties
 }
 
 Import-Module Az -Force
