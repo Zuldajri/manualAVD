@@ -101,8 +101,16 @@ if ($domainType -eq 'AD'){
     
     #Import AzFilesHybrid module
     Import-Module -Name AzFilesHybrid -Force
-
-
+    
+    Set-ItemProperty `
+    -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU `
+    -Name "UseWUServer" `
+    -Type "Dword" `
+    -Value "0" `
+    -Force 
+    
+    Restart-Service -Name "wuauserv" -Force
+    
     $scriptblock= {
         #Step 4
         Import-Module Az -Force
