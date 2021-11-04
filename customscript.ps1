@@ -101,20 +101,11 @@ if ($domainType -eq 'AD'){
     
     #Import AzFilesHybrid module
     Import-Module -Name AzFilesHybrid -Force
-    
-    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name "UseWUServer" -Value "0"
-    Restart-Service -Name "wuauserv" -Force
-    Add-WindowsCapability -Online –Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
-    Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -Name "UseWUServer" -Value "1"
-    Restart-Service -Name "wuauserv" -Force
-    Import-Module ActiveDirectory -Force
-    
 
 
     $scriptblock= {
         #Step 4
         Import-Module Az -Force
-	Import-Module ActiveDirectory -Force
 
         #Connection Needed for Azure 
         $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
