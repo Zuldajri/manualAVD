@@ -97,7 +97,7 @@ if ($domainType -eq 'AD'){
     New-AzStorageAccountKey -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName -KeyName kerb1
     $Token = (Get-AzStorageAccountKey -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName -ListKerbKey | Where-Object {$_.KeyName -eq "kerb1"}).Value
     New-ADComputer -Name $StorageAccountName -AccountPassword (ConvertTo-SecureString -AsPlainText $Token -Force)
-    $stoUri = (Get-AzStorageAccount -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName).PrimaryEndpoints.File).Host
+    $stoUri = ([uri](Get-AzStorageAccount -ResourceGroupName $virtualNetworkResourceGroupName -Name $StorageAccountName).PrimaryEndpoints.File).Host
     Set-ADComputer -Identity $StorageAccountName -ServicePrincipalNames @{Add="cifs/$stoUri"}
     ## Find the storage account's AD computer account's SID
     $StorAccountSid = (Get-ADComputer -Identity $StorageAccountName).SID.Value
