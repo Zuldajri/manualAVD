@@ -542,7 +542,7 @@ if ($useScalingPlan -eq 'true'){
         $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/sendMessage/action")    
         $role.AssignableScopes.Clear()
         $role.AssignableScopes.Add("/subscriptions/$SubscriptionId")
-        Set-AzRoleDefinition -Role $role;
+        Set-AzRoleDefinition -Role $role
     }
 
     $avdSP1 = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://mrs-Prod.ame.gbl/mrs-RDInfra-prod"}
