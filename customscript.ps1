@@ -73,7 +73,7 @@ $RBACAdmin4 = "Desktop Virtualization Session Host Operator"
 $RBACAdmin5 = "Desktop Virtualization User Session Operator"
 $RBACAdmin6 = "Desktop Virtualization Workspace Contributor"
 $RBACUser1 = "Desktop Virtualization User"
-$fulluser = "$($domainName)\$($existingDomainUsername)"
+$fulluser = "$($env:computername)\$($existingDomainUsername)"
 $secpasswd = ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force
 $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secpasswd)
 
@@ -102,17 +102,17 @@ if ($domainType -eq 'AD'){
     #Import AzFilesHybrid module
     Import-Module -Name AzFilesHybrid -Force
     
-    Set-ItemProperty `
-    -Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU `
-    -Name "UseWUServer" `
-    -Type "Dword" `
-    -Value "0" `
-    -Force 
-    
-    Restart-Service -Name "wuauserv" -Force
-    
     $scriptblock= {
-        #Step 4
+         Set-ItemProperty `
+    		-Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU `
+    		-Name "UseWUServer" `
+    		-Type "Dword" `
+    		-Value "0" `
+    		-Force 
+    
+    	Restart-Service -Name "wuauserv" -Force
+	
+	#Step 4
         Import-Module Az -Force
 
         #Connection Needed for Azure 
