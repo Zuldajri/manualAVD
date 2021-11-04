@@ -111,22 +111,28 @@ if ($domainType -eq 'AD'){
     
     Restart-Service -Name "wuauserv" -Force
     
-    #Step 4
-    Import-Module Az -Force
+    $scriptblock= {
+        #Step 4
+        Import-Module Az -Force
 
-    #Connection Needed for Azure 
-    $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
-    $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
-    Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
-    Select-AzSubscription -SubscriptionId $SubscriptionId
+        #Connection Needed for Azure 
+        $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
+        $psCred = New-Object System.Management.Automation.PSCredential($Using:aadClientId , $azurePassword)
+        Connect-AzAccount -Credential $psCred -TenantId $Using:TenantId  -ServicePrincipal
+        Select-AzSubscription -SubscriptionId $Using:SubscriptionId
 
-    # Register the target storage account with your active directory environment
-    Import-Module -Name AzFilesHybrid -Force
-    Join-AzStorageAccountForAuth `
-        -ResourceGroupName $virtualNetworkResourceGroupName `
-        -Name $StorageAccountName `
-        -DomainAccountType $AccountType `
-        -OrganizationalUnitName "Computers"
+        # Register the target storage account with your active directory environment
+        Import-Module -Name AzFilesHybrid -Force
+        Join-AzStorageAccountForAuth `
+            -ResourceGroupName $Using:virtualNetworkResourceGroupName `
+            -Name $Using:StorageAccountName `
+            -DomainAccountType $Using:AccountType `
+            -OrganizationalUnitName "Computers"
+    }
+
+    $session = New-PSSession -cn $env:computername -Credential $mycreds 
+	  Invoke-Command -Session $session -ScriptBlock $scriptblock 
+	  Remove-PSSession -VMName $env:computername
     
 
     #Confirm the feature is enabled
