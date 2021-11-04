@@ -111,28 +111,23 @@ if ($domainType -eq 'AD'){
     
     Restart-Service -Name "wuauserv" -Force
     
-    $scriptblock= {
-        #Step 4
-        Import-Module Az -Force
+    #Step 4
+    Import-Module Az -Force
 
-        #Connection Needed for Azure 
-        $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
-        $psCred = New-Object System.Management.Automation.PSCredential($Using:aadClientId , $azurePassword)
-        Connect-AzAccount -Credential $psCred -TenantId $Using:TenantId  -ServicePrincipal
-        Select-AzSubscription -SubscriptionId $Using:SubscriptionId
+    #Connection Needed for Azure 
+    $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
+    $psCred = New-Object System.Management.Automation.PSCredential($Using:aadClientId , $azurePassword)
+    Connect-AzAccount -Credential $psCred -TenantId $Using:TenantId  -ServicePrincipal
+    Select-AzSubscription -SubscriptionId $Using:SubscriptionId
 
-        # Register the target storage account with your active directory environment
-        Import-Module -Name AzFilesHybrid -Force
-        Join-AzStorageAccountForAuth `
-            -ResourceGroupName $Using:virtualNetworkResourceGroupName `
-            -Name $Using:StorageAccountName `
-            -DomainAccountType $Using:AccountType `
-            -OrganizationalUnitName "Computers"
-    }
-
-    $session = New-PSSession -cn $env:computername -Credential $mycreds 
-	Invoke-Command -Session $session -ScriptBlock $scriptblock 
-	Remove-PSSession -VMName $env:computername
+    # Register the target storage account with your active directory environment
+    Import-Module -Name AzFilesHybrid -Force
+    Join-AzStorageAccountForAuth `
+        -ResourceGroupName $Using:virtualNetworkResourceGroupName `
+        -Name $Using:StorageAccountName `
+        -DomainAccountType $Using:AccountType `
+        -OrganizationalUnitName "Computers"
+    
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
