@@ -87,7 +87,7 @@ if ($domainType -eq 'AD'){
     $stoUri = ([uri](Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName).PrimaryEndpoints.File).Host
 
     $scriptblock= {
-        $ADDomainName = (Get-ADDomain -Identity $Using:domainName).Name.Value
+        $ADDomainName = (Get-ADDomain -Identity $Using:domainName).Name
         $NetBiosDomainName = (Get-ADDomain -Identity $Using:domainName).NetBIOSName.Value
         $ForestName = (Get-ADDomain -Identity $Using:domainName).Forest.Value
         $DomainGuid = (Get-ADDomain -Identity $Using:domainName).ObjectGuid.Guid
