@@ -88,8 +88,8 @@ if ($domainType -eq 'AD'){
 
     $scriptblock= {
         $ADDomainName = (Get-ADDomain -Identity $Using:domainName).Name
-        $NetBiosDomainName = (Get-ADDomain -Identity $Using:domainName).NetBIOSName.Value
-        $ForestName = (Get-ADDomain -Identity $Using:domainName).Forest.Value
+        $NetBiosDomainName = (Get-ADDomain -Identity $Using:domainName).NetBIOSName
+        $ForestName = (Get-ADDomain -Identity $Using:domainName).Forest
         $DomainGuid = (Get-ADDomain -Identity $Using:domainName).ObjectGuid.Guid
         $DomainSid = (Get-ADDomain -Identity $Using:domainName).DomainSID.Value
         New-ADComputer -Name $Using:StorageAccountName -AccountPassword (ConvertTo-SecureString -AsPlainText $Using:Token -Force)
