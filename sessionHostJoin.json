@@ -181,6 +181,14 @@
 	 "adComputerName": {
             "defaultValue": "",
             "type": "string"
+        },
+	 "adminUsername": {
+            "defaultValue": "",
+            "type": "string"
+        },
+	 "adminPassword": {
+            "defaultValue": "",
+            "type": "string"
         }
     },
     "variables": {
@@ -258,8 +266,8 @@
                 },
                 "osProfile": {
                     "computerName": "[concat(parameters('rdshPrefix'), 'host', copyindex(1))]",
-                    "adminUsername": "[variables('existingDomainUsername')]",
-                    "adminPassword": "[parameters('domainAdminPassword')]"
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -510,8 +518,8 @@
                 },
                 "osProfile": {
                     "computerName": "[variables('imageVmName')]",
-                    "adminUsername": "[variables('existingDomainUsername')]",
-                    "adminPassword": "[parameters('domainAdminPassword')]"
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
                 },
                 "diagnosticsProfile": {
 					"bootDiagnostics": {
