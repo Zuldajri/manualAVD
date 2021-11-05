@@ -15,9 +15,9 @@ Param(
   [string] $ObjectIDGroupAdmin,
   [string] $useAVDOptimizer,
   [string] $useScalingPlan,
-  [string] $virtualNetworkResourceGroupName,
   [string] $existingDomainUsername,
   [string] $domainAdminPassword,
+  [string] $adComputerName,
   [string] $installTeams
 )
 
@@ -55,9 +55,8 @@ if ($rdshGalleryImageSKU -eq '2016-Datacenter'){
 #Step 2
 #Variable to not modify
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$AzFileSource = "https://github.com/Zuldajri/AVD/blob/main/AzFilesHybrid.zip?raw=true"
-$locationAzFiledownload = "C:\AzFilesHybrid\AzFilesHybrid.zip"
-$folder = "C:\AzFilesHybrid"
+
+
 $UserGroupName = "AVD-Users"
 $AdminGroupName = "AVD-Admin"
 $rolenameAdmin = "Storage File Data SMB Share Elevated Contributor"
@@ -73,76 +72,71 @@ $RBACAdmin4 = "Desktop Virtualization Session Host Operator"
 $RBACAdmin5 = "Desktop Virtualization User Session Operator"
 $RBACAdmin6 = "Desktop Virtualization Workspace Contributor"
 $RBACUser1 = "Desktop Virtualization User"
-$fulluser = "$($env:computername)\$($existingDomainUsername)"
+
+$fulluser = "$($domainName)\$($existingDomainUsername)"
 $secpasswd = ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force
 $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secpasswd)
 
 
 
 if ($domainType -eq 'AD'){
-    #Step 3
-    #Folder Creation for Unzip
-    New-Item -Path $folder -ItemType Directory
-    #Download AzFile and Unzip AzFile
-    Invoke-WebRequest -Uri $AzFileSource -OutFile $locationAzFiledownload
-    Expand-Archive C:\AzFilesHybrid\AzFilesHybrid.zip -DestinationPath C:\AzFilesHybrid\
-    #Set the Location
-    cd C:\AzFilesHybrid\
-    # Navigate to where AzFilesHybrid is unzipped and stored and run to copy the files into your path
+    #Step 3 domain join the file share
 
-    $desiredModulePath = "$env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\"
-    if (!(Test-Path -Path $desiredModulePath)) {
-        New-Item -Path $desiredModulePath -ItemType Directory | Out-Null
-    }
-    
-    mv C:\AzFilesHybrid\AzFilesHybrid.psd1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psd1
-    mv C:\AzFilesHybrid\AzFilesHybrid.psm1 $env:ProgramFiles\WindowsPowershell\Modules\AzFilesHybrid\0.2.2.0\AzFilesHybrid.psm1
-    
-    
-    #Import AzFilesHybrid module
-    Import-Module -Name AzFilesHybrid -Force
-    
+    New-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -KeyName kerb1
+    $Token = (Get-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -ListKerbKey | Where-Object {$_.KeyName -eq "kerb1"}).Value
+    $stoUri = ([uri](Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName).PrimaryEndpoints.File).Host
+
     $scriptblock= {
-         Set-ItemProperty `
-    		-Path HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU `
-    		-Name "UseWUServer" `
-    		-Type "Dword" `
-    		-Value "0" `
-    		-Force 
-    
-    	Restart-Service -Name "wuauserv" -Force
-	
-	#Step 4
-        Import-Module Az -Force
-
-        #Connection Needed for Azure 
-        $azurePassword = ConvertTo-SecureString $Using:aadClientSecret -AsPlainText -Force
-        $psCred = New-Object System.Management.Automation.PSCredential($Using:aadClientId , $azurePassword)
-        Connect-AzAccount -Credential $psCred -TenantId $Using:TenantId  -ServicePrincipal
-        Select-AzSubscription -SubscriptionId $Using:SubscriptionId
-
-        # Register the target storage account with your active directory environment
-        Import-Module -Name AzFilesHybrid -Force
-        Join-AzStorageAccountForAuth `
-            -ResourceGroupName $Using:virtualNetworkResourceGroupName `
-            -Name $Using:StorageAccountName `
-            -DomainAccountType $Using:AccountType `
-            -OrganizationalUnitName "Computers"
+        $ADDomainName = (Get-ADDomain -Identity $Using:domainName).Name.Value
+        $NetBiosDomainName = (Get-ADDomain -Identity $Using:domainName).NetBIOSName.Value
+        $ForestName = (Get-ADDomain -Identity $Using:domainName).Forest.Value
+        $DomainGuid = (Get-ADDomain -Identity $Using:domainName).ObjectGuid.Guid
+        $DomainSid = (Get-ADDomain -Identity $Using:domainName).DomainSID.Value
+        New-ADComputer -Name $Using:StorageAccountName -AccountPassword (ConvertTo-SecureString -AsPlainText $Using:Token -Force)
+        Set-ADComputer -Identity $Using:StorageAccountName -ServicePrincipalNames @{Add="cifs/$Using:stoUri"}
+        $StorAccountSid = (Get-ADComputer -Identity $Using:StorageAccountName).SID.Value
     }
 
-    $session = New-PSSession -cn $env:computername -Credential $mycreds 
-	  Invoke-Command -Session $session -ScriptBlock $scriptblock 
-	  Remove-PSSession -VMName $env:computername
+    $session = New-PSSession -cn $adComputerName -Credential $mycreds 
+	Invoke-Command -Session $session -ScriptBlock $scriptblock 
+    $ADDomainName = Invoke-Command -Session $session -ScriptBlock { $ADDomainName }
+    $NetBiosDomainName = Invoke-Command -Session $session -ScriptBlock { $NetBiosDomainName }
+    $ForestName = Invoke-Command -Session $session -ScriptBlock { $ForestName }
+    $DomainGuid = Invoke-Command -Session $session -ScriptBlock { $DomainGuid }
+    $DomainSid = Invoke-Command -Session $session -ScriptBlock { $DomainSid }
+    $StorAccountSid = Invoke-Command -Session $session -ScriptBlock { $StorAccountSid }
+	Remove-PSSession -VMName $adComputerName
     
+    Import-Module Az -Force
+
+    #Connection Needed for Azure 
+    $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
+    $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
+    Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
+    Select-AzSubscription -SubscriptionId $SubscriptionId   
+
+    ## Provide Set-AzStorageAccount with all appropriate GUIDs and SIDs
+    ## along with the AD domain it should be a part of
+    Set-AzStorageAccount `
+        -ResourceGroupName $ResourceGroupName `
+        -Name $StorageAccountName `
+        -EnableActiveDirectoryDomainServicesForFile $true `
+        -ActiveDirectoryDomainName $ADDomainName `
+        -ActiveDirectoryNetBiosDomainName $NetBiosDomainName `
+        -ActiveDirectoryForestName $ForestName `
+        -ActiveDirectoryDomainGuid $DomainGuid `
+        -ActiveDirectoryDomainsid $DomainSid `
+        -ActiveDirectoryAzureStorageSid $StorAccountSid
 
     #Confirm the feature is enabled
     $storageaccount = Get-AzStorageAccount `
-        -ResourceGroupName $virtualNetworkResourceGroupName `
+        -ResourceGroupName $ResourceGroupName `
         -Name $StorageAccountName
 
     $storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions
     $storageAccount.AzureFilesIdentityBasedAuth.ActiveDirectoryProperties
 }
+
 
 Import-Module Az -Force
 
@@ -157,14 +151,14 @@ Select-AzSubscription -SubscriptionId $SubscriptionId
 $FileShareContributorRole = Get-AzRoleDefinition $rolenameAdmin 
 #Use one of the built-in roles: Storage File Data SMB Share Reader, Storage File Data SMB Share Contributor, Storage File Data SMB Share Elevated Contributor
 #Constrain the scope to the target file share
-$scope = "/subscriptions/$SubscriptionId/resourceGroups/$virtualNetworkResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
+$scope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
 #Assign the custom role to the target identity with the specified scope.
 New-AzRoleAssignment -ObjectId $ObjectIDGroupAdmin -RoleDefinitionName $FileShareContributorRole.Name -Scope $scope
 #Get the name of the custom role
 $FileShareContributorRole = Get-AzRoleDefinition $rolenameUser 
 #Use one of the built-in roles: Storage File Data SMB Share Reader, Storage File Data SMB Share Contributor, Storage File Data SMB Share Elevated Contributor
 #Constrain the scope to the target file share
-$scope = "/subscriptions/$SubscriptionId/resourceGroups/$virtualNetworkResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
+$scope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Storage/storageAccounts/$StorageAccountName/fileServices/default/fileshares/$fileShareName"
 #Assign the custom role to the target identity with the specified scope.
 New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $FileShareContributorRole.Name -Scope $scope
 
