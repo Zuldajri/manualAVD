@@ -80,7 +80,7 @@ $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secp
 
 
 if ($domainType -eq 'AD'){
-    if ($hostname -contains 'host1'){
+    if ($hostname -like '*host1'){
         #Step 3 domain join the file share
 
         New-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -KeyName kerb1
@@ -139,7 +139,7 @@ if ($domainType -eq 'AD'){
     }
 }
 
-if (!($hostname -contains 'host1')){sleep 120}
+if (!($hostname -like '*host1')){sleep 120}
 
 Import-Module Az -Force
 
@@ -149,7 +149,7 @@ $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $a
 Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
 Select-AzSubscription -SubscriptionId $SubscriptionId
 
-if ($hostname -contains 'host1'){
+if ($hostname -like '*host1'){
     #Step 4
     #Add the Azure Right to the storage Account
     $FileShareContributorRole = Get-AzRoleDefinition $rolenameAdmin 
@@ -167,7 +167,7 @@ if ($hostname -contains 'host1'){
     New-AzRoleAssignment -ObjectId $ObjectIDGroupUser -RoleDefinitionName $FileShareContributorRole.Name -Scope $scope
 }
 
-if (!($hostname -contains 'host1')){sleep 30}
+if (!($hostname -like '*host1')){sleep 30}
 
 #Step 5
 #Add the Admin Rights to the Admin Group and User Group
@@ -448,7 +448,7 @@ New-ItemProperty `
 #Step 15    Teams installation
 
 if ($installTeams -eq 'true'){
-    if ($rdshGalleryImageSKU -contains 'Datacenter'){
+    if ($rdshGalleryImageSKU -like '*Datacenter'){
 
         #regedit teams for wvd
         New-Item -Path HKLM:\SOFTWARE\Microsoft -Name "Teams" 
