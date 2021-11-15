@@ -73,7 +73,7 @@
             }
         },
         "domainAdminPassword": {
-            "type": "SecureString",
+            "type": "String",
             "metadata": {
                 "description": "The password that corresponds to the existing domain username."
             }
