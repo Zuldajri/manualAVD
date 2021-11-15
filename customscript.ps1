@@ -290,7 +290,7 @@ Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "UnZip FXLogix Complete"
 Add-Content -LiteralPath C:\temp\New-AVDSessionHost.log "Installing FSLogix"
 $fslogix_deploy_status = Start-Process `
     -FilePath "$LocalAVDpath\FSLogix\x64\Release\FSLogixAppsSetup.exe" `
-    -ArgumentList "/install /quiet" `
+    -ArgumentList "/install /quiet /norestart" `
     -Wait `
     -Passthru
 
