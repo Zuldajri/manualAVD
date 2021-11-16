@@ -18,6 +18,8 @@ Param(
   [string] $existingDomainUsername,
   [string] $domainAdminPassword,
   [string] $adComputerName,
+  [string] $hostpoolName,
+  [string] $enableOnConnect,
   [string] $installTeams
 )
 
