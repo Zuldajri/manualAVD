@@ -501,7 +501,7 @@
                     },
                     "osDisk": {
                         "createOption": "FromImage",
-                        "name": "[concat(variables('imageVmName'), '-osDisk', copyindex(1))]",
+                        "name": "[concat(variables('imageVmName'), '-osDisk')]",
                         "caching": "ReadWrite",
                         "diskSizeGB": "[parameters('osDiskSize')]",
                         "managedDisk": {
