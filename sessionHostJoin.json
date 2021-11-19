@@ -443,7 +443,7 @@
             "apiVersion": "2019-02-01",
             "location": "[variables('location')]",
             "properties": {
-                "publicIpAllocationMethod": "Dynamic"
+                "publicIpAllocationMethod": "Static"
             },
             "sku": {
                 "name": "Standard"
