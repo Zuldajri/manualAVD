@@ -31,7 +31,7 @@
 			"type": "string"
 		},
 		"fileShareQuota": {
-			"type": "string"
+			"type": "int"
 		}
 	},
 	"variables": {
