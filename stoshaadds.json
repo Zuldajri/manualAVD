@@ -29,6 +29,9 @@
 		},
 		"fileShareName": {
 			"type": "string"
+		},
+		"fileShareQuota": {
+			"type": "int"
 		}
 	},
 	"variables": {
@@ -81,7 +84,7 @@
                 "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountNameShare'))]"
             ],
             "properties": {
-                "shareQuota": 5120
+                "shareQuota": "[parameters('fileShareQuota')]"
             }
         }	
 		
