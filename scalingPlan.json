@@ -1,1 +1,118 @@
-
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+        "avdObjectLocation": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Datacenter Region Location"
+			}
+		},
+		"scalingPlanName": {
+			"type": "string",
+			"minLength": 1
+		},
+		"hostpoolName": {
+			"type": "string",
+			"minLength": 1
+		},
+		"enableScalingPlan": {
+			"type": "bool"
+		},
+		"scalingTimeZone": {
+			"type": "string"
+		},
+        "rampUpStartTime": {
+			"type": "int"
+		},
+        "peakStartTime": {
+			"type": "int"
+		},
+        "rampDownStartTime": {
+			"type": "int"
+		},
+        "offPeakStartTime": {
+			"type": "int"
+		},
+		"daysOfWeek": {
+			"type": "string"
+		}
+	},
+	"variables": {
+        "daysOfWeek": "[variables(concat('daysOfWeek-', parameters('daysOfWeek')))]",
+        "daysOfWeek-5Days": [
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday"
+        ],
+        "daysOfWeek-7Days": [
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                            "Sunday"
+        ]
+	},
+	"resources": [
+		{
+            "type": "Microsoft.DesktopVirtualization/scalingplans",
+            
+            "apiVersion": "2021-09-03-preview",
+            "name": "[parameters('scalingPlanName')]",
+            "location": "[parameters('avdObjectLocation')]",
+            "dependsOn": [
+                "SessionHostDeployment"
+            ],
+            "properties": {
+                "hostPoolReferences": [
+                    {
+                        "hostPoolArmPath": "[resourceId('Microsoft.DesktopVirtualization/hostpools/', parameters('hostpoolName'))]",
+                        "scalingPlanEnabled": "[parameters('enableScalingPlan')]"
+                    }
+                ],
+                "timeZone": "[parameters('scalingTimeZone')]",
+                "hostPoolType": "Pooled",
+                "schedules": [
+                    {
+                        "rampUpStartTime": {
+                            "hour": "[parameters('rampUpStartTime')]",
+                            "minute": 0
+                        },
+                        "peakStartTime": {
+                            "hour": "[parameters('peakStartTime')]",
+                            "minute": 0
+                        },
+                        "rampDownStartTime": {
+                            "hour": "[parameters('rampDownStartTime')]",
+                            "minute": 0
+                        },
+                        "offPeakStartTime": {
+                            "hour": "[parameters('offPeakStartTime')]",
+                            "minute": 0
+                        },
+                        "name": "weekdays_schedule",
+                        "daysOfWeek": "[variables('daysOfWeek')]",
+                        "rampUpLoadBalancingAlgorithm": "BreadthFirst",
+                        "rampUpMinimumHostsPct": 20,
+                        "rampUpCapacityThresholdPct": 60,
+                        "peakLoadBalancingAlgorithm": "DepthFirst",
+                        "rampDownLoadBalancingAlgorithm": "DepthFirst",
+                        "rampDownMinimumHostsPct": 10,
+                        "rampDownCapacityThresholdPct": 90,
+                        "rampDownForceLogoffUsers": true,
+                        "rampDownWaitTimeMinutes": 30,
+                        "rampDownNotificationMessage": "You will be logged off in 30 min. Make sure to save your work.",
+                        "rampDownStopHostsWhen": "ZeroSessions",
+                        "offPeakLoadBalancingAlgorithm": "DepthFirst"
+                    }
+                ]
+            }
+        }
+	],
+	"outputs": {}
+}
