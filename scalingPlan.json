@@ -65,9 +65,6 @@
             "apiVersion": "2021-09-03-preview",
             "name": "[parameters('scalingPlanName')]",
             "location": "[parameters('avdObjectLocation')]",
-            "dependsOn": [
-                "SessionHostDeployment"
-            ],
             "properties": {
                 "hostPoolReferences": [
                     {
