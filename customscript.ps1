@@ -488,8 +488,11 @@ if ($installTeams -eq 'true'){
     }
 }
 
+#Step 16    Enable Time Zone Redirection
+reg add "HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services" /v fEnableTimeZoneRedirection  /t REG_DWORD /d 1 /f
+
 if ($useAVDOptimizer -eq 'true'){
-#Step 16    WVD Optimization
+#Step 17    WVD Optimization
 
 
     $Optimizations = "All"
@@ -556,7 +559,7 @@ if ($enableOnConnect -eq 'true'){
 }
 
 if ($useScalingPlan -eq 'true'){
-    #Step 18    AVD Autoscale
+    #Step 19    AVD Autoscale
 
     if (!(Get-AzRoleDefinition -Name "AVD Autoscale")) {
         Write-Host "Role does not exist, creating."
