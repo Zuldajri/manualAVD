@@ -36,7 +36,7 @@ if ($size -lt $maxSize){
 #Module and Connection
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name PowerShellGet -Force -AllowClobber
-Install-Module -Name Az -force -AllowClobber
+Install-Module -Name Az -RequiredVersion 6.6.0 -force -AllowClobber
 Import-Module Az -Force
 
 #Connection Needed for Azure 
