@@ -336,40 +336,12 @@
             }
         },
         {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2018-10-01",
-            "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'dscextension')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "rdsh-domain-join-loop"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Powershell",
-                "type": "DSC",
-                "typeHandlerVersion": "2.73",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "modulesUrl": "[variables('artifactsLocation')]",
-                    "configurationFunction": "Configuration.ps1\\AddSessionHost",
-                    "properties": {
-                        "hostPoolName": "[parameters('hostpoolName')]",
-                        "registrationInfoToken": "[parameters('hostpoolToken')]",
-                        "aadJoin": false
-                    }
-                }
-            },
-            "copy": {
-                "name": "rdsh-dsc-loop",
-                "count": "[parameters('rdshNumberOfInstances')]"
-            }
-        },
-        {
             "name": "[concat(parameters('rdshPrefix'), 'host', copyindex(1), '/', 'installcustomscript')]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2015-06-15",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "rdsh-dsc-loop"
+                "rdsh-domain-join-loop"
             ],
             "properties": {
                 "publisher": "Microsoft.Compute",
