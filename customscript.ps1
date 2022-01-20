@@ -76,10 +76,6 @@ $RBACAdmin6 = "Desktop Virtualization Workspace Contributor"
 $RBACUser1 = "Desktop Virtualization User"
 $hostname = hostname
 $fulluser = "$($domainName)\$($existingDomainUsername)"
-$secpasswd = ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force
-$mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secpasswd)
-
-
 
 
 
