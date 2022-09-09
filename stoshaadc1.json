@@ -58,12 +58,6 @@
                 "minimumTlsVersion": "[variables('minimumTlsVersion')]",
                 "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
                 "allowBlobPublicAccess": "[variables('allowBlobPublicAccess')]",
-                "networkAcls": {
-                    "bypass": "[variables('networkAclsBypass')]",
-                    "defaultAction": "[variables('networkAclsDefaultAction')]",
-                    "ipRules": [],
-                    "virtualNetworkRules": "[variables('networkAclsVirtualNetworkRules')]"
-                }
             }
         },
 	{
