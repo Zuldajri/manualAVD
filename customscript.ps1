@@ -561,56 +561,7 @@ if ($enableOnConnect -eq 'true'){
 if ($useScalingPlan -eq 'true'){
     #Step 19    AVD Autoscale
 
-    if (!(Get-AzRoleDefinition -Name "AVD Autoscale")) {
-        Write-Host "Role does not exist, creating."
-        $role = Get-AzRoleDefinition -Name "Contributor"
-        $role.Id = $null
-        $role.Name = "AVD Autoscale"
-        $role.Description = "Used for AVD Scaling."
-        $role.IsCustom = $true
-        $role.Actions.RemoveRange(0,$role.Actions.Count)
-        $role.Actions.Add("Microsoft.Insights/eventtypes/values/read")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/deallocate/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/restart/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/powerOff/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/start/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/write")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/write")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/delete")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/sendMessage/action")       
-        $role.AssignableScopes.Clear()
-        $role.AssignableScopes.Add("/subscriptions/$SubscriptionId")
-        New-AzRoleDefinition -Role $role
-        Get-AzRoleDefinition -Name "AVD Autoscale"
-    }
-    else { 
-        Write-Host "Role exists"
-        $role=Get-AzRoleDefinition -Name "AVD Autoscale"
-        $role.Actions.RemoveRange(0,$role.Actions.Count)
-        $role.Actions.Add("Microsoft.Insights/eventtypes/values/read")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/deallocate/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/restart/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/powerOff/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/start/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/write")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/write")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/delete")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/read")
-        $role.Actions.Add("Microsoft.DesktopVirtualization/hostpools/sessionhosts/usersessions/sendMessage/action")    
-        $role.AssignableScopes.Clear()
-        $role.AssignableScopes.Add("/subscriptions/$SubscriptionId")
-        Set-AzRoleDefinition -Role $role
-    }
-
     $avdSP1 = Get-AzADServicePrincipal -AppId "9cdead84-a844-4324-93f2-b2e6bb768d07"
-    if (!(Get-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "Desktop Virtualization Power On Off Contributor" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "Desktop Virtualization Power On Off Contributor" -scope "/subscriptions/$SubscriptionId"}    
-    if (!(Get-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "AVD Autoscale" -scope "/subscriptions/$SubscriptionId"}    
+    if (!(Get-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "Desktop Virtualization Power On Off Contributor" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "Desktop Virtualization Power On Off Contributor" -scope "/subscriptions/$SubscriptionId"}       
 
 }
