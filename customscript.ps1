@@ -561,7 +561,7 @@ if ($enableOnConnect -eq 'true'){
 if ($useScalingPlan -eq 'true'){
     #Step 19    AVD Autoscale
 
-    $objId = (Get-AzADServicePrincipal -AppId "9cdead84-a844-4324-93f2-b2e6bb768d07").Id
+    $objId = (Get-AzADServicePrincipal -ApplicationId "9cdead84-a844-4324-93f2-b2e6bb768d07").Id
     if (!(Get-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Desktop Virtualization Power On Off Contributor" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Desktop Virtualization Power On Off Contributor" -Scope "/subscriptions/$SubscriptionId"}       
 
 }
