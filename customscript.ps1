@@ -524,37 +524,8 @@ if ($useAVDOptimizer -eq 'true'){
 
 if ($enableOnConnect -eq 'true'){
     #Step 18    Start Virtual Machine on Connect
-    if (!(Get-AzRoleDefinition -Name "Start VM on connect (Custom)")) {
-        Write-Host "Role does not exist, creating."
-        $role = Get-AzRoleDefinition -Name "Contributor"
-        $role.Id = $null
-        $role.Name = "Start VM on connect (Custom)"
-        $role.Description = "Used for Start VM on connect."
-        $role.IsCustom = $true
-        $role.Actions.RemoveRange(0,$role.Actions.Count)
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/start/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/*/read")     
-        $role.AssignableScopes.Clear()
-        $role.AssignableScopes.Add("/subscriptions/$SubscriptionId")
-        New-AzRoleDefinition -Role $role
-        Get-AzRoleDefinition -Name "Start VM on connect (Custom)"
-    }
-    else { 
-        Write-Host "Role exists"
-        $role=Get-AzRoleDefinition -Name "Start VM on connect (Custom)"
-        $role.Actions.RemoveRange(0,$role.Actions.Count)
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/start/action")
-        $role.Actions.Add("Microsoft.Compute/virtualMachines/*/read")     
-        $role.AssignableScopes.Clear()
-        $role.AssignableScopes.Add("/subscriptions/$SubscriptionId")
-        Set-AzRoleDefinition -Role $role
-    }
-
-    $avdSP1 = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://mrs-Prod.ame.gbl/mrs-RDInfra-prod"}
-    if (!(Get-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "Start VM on connect (Custom)" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP1.Id -RoleDefinitionName "Start VM on connect (Custom)" -scope "/subscriptions/$SubscriptionId"}
-    $avdSP2 = Get-AzADServicePrincipal | Where-Object {$_.DisplayName -eq "Windows Virtual Desktop"} | Where-Object {$_.ServicePrincipalNames -contains "https://www.wvd.microsoft.com"}
-    if (!(Get-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "Start VM on connect (Custom)" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $avdSP2.Id -RoleDefinitionName "Start VM on connect (Custom)" -scope "/subscriptions/$SubscriptionId"}
-
+    $objId = (Get-AzADServicePrincipal -ApplicationId "9cdead84-a844-4324-93f2-b2e6bb768d07").Id
+    if (!(Get-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Azure Virtual Desktop Start VM on Connect" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Azure Virtual Desktop Start VM on Connect" -Scope "/subscriptions/$SubscriptionId"}
     Update-AzWvdHostPool -ResourceGroupName $ResourceGroupName -Name $hostpoolName -StartVMOnConnect:$true
 }
 
