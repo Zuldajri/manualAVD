@@ -525,7 +525,7 @@ if ($useAVDOptimizer -eq 'true'){
 if ($enableOnConnect -eq 'true'){
     #Step 18    Start Virtual Machine on Connect
     $objId = (Get-AzADServicePrincipal -ApplicationId "9cdead84-a844-4324-93f2-b2e6bb768d07").Id
-    if (!(Get-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Azure Virtual Desktop Start VM on Connect" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Azure Virtual Desktop Start VM on Connect" -Scope "/subscriptions/$SubscriptionId"}
+    if (!(Get-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Desktop Virtualization Power On Contributor" -scope "/subscriptions/$SubscriptionId")){New-AzRoleAssignment -ObjectId $objId -RoleDefinitionName "Desktop Virtualization Power On Contributor" -Scope "/subscriptions/$SubscriptionId"}
     Update-AzWvdHostPool -ResourceGroupName $ResourceGroupName -Name $hostpoolName -StartVMOnConnect:$true
 }
 
