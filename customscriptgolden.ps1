@@ -331,6 +331,9 @@ if ($installTeams -eq 'true'){
     }
 }
 
+#Step 16    Enable Time Zone Redirection
+reg add "HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services" /v fEnableTimeZoneRedirection  /t REG_DWORD /d 1 /f
+
 if ($useAVDOptimizer -eq 'true'){
 #Step 16    WVD Optimization
 
