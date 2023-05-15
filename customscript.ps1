@@ -17,7 +17,6 @@ Param(
   [string] $useScalingPlan,
   [string] $existingDomainUsername,
   [string] $domainAdminPassword,
-  [string] $adComputerName,
   [string] $hostpoolName,
   [string] $enableOnConnect,
   [string] $installTeams
@@ -80,65 +79,6 @@ $secpasswd = ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force
 $mycreds = New-Object System.Management.Automation.PSCredential($fulluser, $secpasswd)
 
 
-if ($domainType -eq 'AD'){
-    if ($hostname -like '*host1'){
-        #Step 3 domain join the file share
-
-        New-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -KeyName kerb1
-        $Token = (Get-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -ListKerbKey | Where-Object {$_.KeyName -eq "kerb1"}).Value
-        $stoUri = ([uri](Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName).PrimaryEndpoints.File).Host
-
-        $scriptblock= {
-            $ADDomainName = (Get-ADDomain -Identity $Using:domainName).Name
-            $NetBiosDomainName = (Get-ADDomain -Identity $Using:domainName).NetBIOSName
-            $ForestName = (Get-ADDomain -Identity $Using:domainName).Forest
-            $DomainGuid = (Get-ADDomain -Identity $Using:domainName).ObjectGuid.Guid
-            $DomainSid = (Get-ADDomain -Identity $Using:domainName).DomainSID.Value
-            New-ADComputer -Name $Using:StorageAccountName -AccountPassword (ConvertTo-SecureString -AsPlainText $Using:Token -Force)
-            Set-ADComputer -Identity $Using:StorageAccountName -ServicePrincipalNames @{Add="cifs/$Using:stoUri"}
-            $StorAccountSid = (Get-ADComputer -Identity $Using:StorageAccountName).SID.Value
-        }
-
-        $session = New-PSSession -cn $adComputerName -Credential $mycreds 
-	    Invoke-Command -Session $session -ScriptBlock $scriptblock 
-        $ADDomainName = Invoke-Command -Session $session -ScriptBlock { $ADDomainName }
-        $NetBiosDomainName = Invoke-Command -Session $session -ScriptBlock { $NetBiosDomainName }
-        $ForestName = Invoke-Command -Session $session -ScriptBlock { $ForestName }
-        $DomainGuid = Invoke-Command -Session $session -ScriptBlock { $DomainGuid }
-        $DomainSid = Invoke-Command -Session $session -ScriptBlock { $DomainSid }
-        $StorAccountSid = Invoke-Command -Session $session -ScriptBlock { $StorAccountSid }
-	    Remove-PSSession -VMName $adComputerName
-    
-        Import-Module Az -Force
-
-        #Connection Needed for Azure 
-        $azurePassword = ConvertTo-SecureString $aadClientSecret -AsPlainText -Force
-        $psCred = New-Object System.Management.Automation.PSCredential($aadClientId , $azurePassword)
-        Connect-AzAccount -Credential $psCred -TenantId $TenantId  -ServicePrincipal
-        Select-AzSubscription -SubscriptionId $SubscriptionId   
-
-        ## Provide Set-AzStorageAccount with all appropriate GUIDs and SIDs
-        ## along with the AD domain it should be a part of
-        Set-AzStorageAccount `
-            -ResourceGroupName $ResourceGroupName `
-            -Name $StorageAccountName `
-            -EnableActiveDirectoryDomainServicesForFile $true `
-            -ActiveDirectoryDomainName $ADDomainName `
-            -ActiveDirectoryNetBiosDomainName $NetBiosDomainName `
-            -ActiveDirectoryForestName $ForestName `
-            -ActiveDirectoryDomainGuid $DomainGuid `
-            -ActiveDirectoryDomainsid $DomainSid `
-            -ActiveDirectoryAzureStorageSid $StorAccountSid
-
-        #Confirm the feature is enabled
-        $storageaccount = Get-AzStorageAccount `
-            -ResourceGroupName $ResourceGroupName `
-            -Name $StorageAccountName
-
-        $storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions
-        $storageAccount.AzureFilesIdentityBasedAuth.ActiveDirectoryProperties
-    }
-}
 
 
 if (!($hostname -like '*host1')){sleep 120}
