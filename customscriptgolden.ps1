@@ -17,7 +17,6 @@ Param(
   [string] $useScalingPlan,
   [string] $existingDomainUsername,
   [string] $domainAdminPassword,
-  [string] $adComputerName,
   [string] $installTeams
 )
 
