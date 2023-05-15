@@ -1,9 +1,9 @@
 {
-	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
-     "location": {
-			"type": "string",
+        "location": {
+		    "type": "string",
 			"minLength": 1,
 			"metadata": {
 				"description": "Datacenter Region Location"
@@ -14,10 +14,6 @@
 			"minLength": 1
 		},
 		"shareStorageType": {
-			"type": "string",
-			"minLength": 1
-		},
-		"AZexistingSubnetId": {
 			"type": "string",
 			"minLength": 1
 		},
@@ -33,15 +29,7 @@
         "minimumTlsVersion": "TLS1_2",
 	    "kind": "[if(equals(parameters('shareStorageType'), 'Standard_LRS'), 'StorageV2', 'FileStorage')]",
         "supportsHttpsTrafficOnly": true,
-        "allowBlobPublicAccess": true,
-        "networkAclsBypass": "AzureServices",
-        "networkAclsDefaultAction": "Deny",
-        "vnetID": "[parameters('AZexistingSubnetId')]",
-        "networkAclsVirtualNetworkRules": [
-            {
-                "id": "[variables('vnetID')]"
-            }
-        ]
+        "allowBlobPublicAccess": true
 	},
 	"resources": [
 		{
@@ -57,7 +45,7 @@
                 "accessTier": "[variables('accessTier')]",
                 "minimumTlsVersion": "[variables('minimumTlsVersion')]",
                 "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
-                "allowBlobPublicAccess": "[variables('allowBlobPublicAccess')]",
+                "allowBlobPublicAccess": "[variables('allowBlobPublicAccess')]"
             }
         },
 	{
