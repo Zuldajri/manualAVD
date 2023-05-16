@@ -343,7 +343,7 @@ if ($useAVDOptimizer -eq 'true'){
 
     New-Item -Path C:\ -Name Optimize -ItemType Directory -ErrorAction SilentlyContinue
     $LocalPath = "C:\Optimize\"
-    $WVDOptimizeURL = 'https://github.com/Zuldajri/AVD/blob/main/Virtual-Desktop-Optimization-Tool-main.zip?raw=true'
+    $WVDOptimizeURL = 'https://github.com/Zuldajri/manualAVD/blob/main/Virtual-Desktop-Optimization-Tool-main.zip?raw=true'
     $WVDOptimizeInstaller = "Windows_10_VDI_Optimize-master.zip"
     Invoke-WebRequest `
         -Uri $WVDOptimizeURL `
