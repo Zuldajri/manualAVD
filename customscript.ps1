@@ -363,7 +363,7 @@ if((Test-Path $DirectoryIDT) -eq $false) { New-Item -Path $DirectoryIDT -ItemTyp
 
 #Download the Xmlredirection
 $localpath2 = "C:\temp\AVD\redirection.xml"
-$xmlurl= "https://raw.githubusercontent.com/Zuldajri/AVD/main/redirections.xml"
+$xmlurl= "https://raw.githubusercontent.com/Zuldajri/manualAVD/main/redirections.xml"
 Invoke-WebRequest -Uri $xmlurl -OutFile $localpath2
 sleep 10
 
@@ -441,7 +441,7 @@ if ($useAVDOptimizer -eq 'true'){
 
     New-Item -Path C:\ -Name Optimize -ItemType Directory -ErrorAction SilentlyContinue
     $LocalPath = "C:\Optimize\"
-    $WVDOptimizeURL = 'https://github.com/Zuldajri/AVD/blob/main/Virtual-Desktop-Optimization-Tool-main.zip?raw=true'
+    $WVDOptimizeURL = 'https://github.com/Zuldajri/manualAVD/blob/main/Virtual-Desktop-Optimization-Tool-main.zip?raw=true'
     $WVDOptimizeInstaller = "Windows_10_VDI_Optimize-master.zip"
     Invoke-WebRequest `
         -Uri $WVDOptimizeURL `
